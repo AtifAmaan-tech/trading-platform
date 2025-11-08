@@ -1,12 +1,13 @@
 /* Cache invalidation: v2 */
 @import "tailwindcss";
-
+@config "../tailwind.config.js";
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.08 0 0);
+  --background: oklch(0% 0 0);
   --foreground: oklch(0.98 0 0);
-  --card: oklch(0.12 0 0);
+  --card: oklch(0% 0 0);
   --card-foreground: oklch(0.98 0 0);
   --popover: oklch(0.12 0 0);
   --popover-foreground: oklch(0.98 0 0);
@@ -75,8 +76,9 @@
 }
 
 @theme inline {
-  --font-sans: "Geist", "Geist Fallback";
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --font-cust: "Noto Sans", sans-serif;
+
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

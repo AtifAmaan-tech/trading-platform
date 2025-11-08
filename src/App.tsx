@@ -1,41 +1,14 @@
 import "./App.css";
 import Portfolio from "./components/portfolio/portfolio";
-import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTop from "./components/dashboard/ScrollToTop";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import AuthPage from "./components/auth"; // Import the new AuthPage
-import { useState, useEffect } from "react";
-import axios from "axios";
+import AuthPage from "./components/auth/auth";
 import Home from "./components/dashboard/Home";
 import TradePage from "./trade/trade";
+import { useAuth } from "./components/auth/authcontext";
 
-axios.defaults.withCredentials = true;
-
-interface Props {
-  onLoginStatusChange?: (value: boolean) => void;
-}
-
-function App({ onLoginStatusChange }: Props) {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoggedIn(false);
-      setLoading(false);
-      return;
-    }
-
-    axios
-      .get("http://localhost:5000/check-auth", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        if (res.data.authenticated) setLoggedIn(true);
-      })
-      .catch(() => setLoggedIn(false))
-      .finally(() => setLoading(false));
-  }, [onLoginStatusChange]);
+function AppRoutes() {
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -46,37 +19,32 @@ function App({ onLoginStatusChange }: Props) {
   }
 
   return (
+    <Routes>
+      <Route
+        path="/"
+        element={user ? <Navigate to="/home" replace /> : <AuthPage />}
+      />
+      <Route
+        path="/home"
+        element={user ? <Home /> : <Navigate to="/" replace />}
+      />
+      <Route
+        path="/trade"
+        element={user ? <TradePage /> : <Navigate to="/" replace />}
+      />
+      <Route
+        path="/portfolio"
+        element={user ? <Portfolio /> : <Navigate to="/" replace />}
+      />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
     <BrowserRouter>
       <ScrollToTop />
-      <Routes>
-        {/* <Route
-          path="/"
-          element={loggedIn ? <Navigate to="/home" /> : <AuthPage />}
-        /> */}
-        <Route
-          path="/"
-          element={
-            loggedIn ? (
-              <Navigate to="/home" replace />
-            ) : (
-              <AuthPage onLogin={() => setLoggedIn(true)} />
-            )
-          }
-        />
-
-        <Route
-          path="/home"
-          element={loggedIn ? <Home /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/trade"
-          element={loggedIn ? <TradePage /> : <Navigate to="/trade" />}
-        />
-        <Route
-          path="/portfolio"
-          element={loggedIn ? <Portfolio /> : <Navigate to="/portfolio" />}
-        />
-      </Routes>
+      <AppRoutes />
     </BrowserRouter>
   );
 }

@@ -1,9 +1,15 @@
-"use client"
+"use client";
 
-// import { useState } from "react"
-import Navbar from "@/components/dashboard/navbar"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react";
+import Navbar from "@/components/dashboard/navbar";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   LineChart,
   Line,
@@ -15,8 +21,10 @@ import {
   PieChart,
   Pie,
   Cell,
-} from "recharts"
-import { Wallet, Gift, ArrowUpRight, ArrowDownLeft } from "lucide-react"
+} from "recharts";
+import { Wallet, Gift, ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import axios from "axios";
+import { useAuth } from "../auth/authcontext";
 
 // Mock data for balance chart
 const balanceData = [
@@ -27,7 +35,7 @@ const balanceData = [
   { date: "Fri", balance: 15100 },
   { date: "Sat", balance: 14800 },
   { date: "Sun", balance: 15327 },
-]
+];
 
 // Mock data for token allocation
 const tokenAllocation = [
@@ -35,7 +43,7 @@ const tokenAllocation = [
   { name: "ETH", value: 30, color: "#627eea" },
   { name: "BTC", value: 15, color: "#f7931a" },
   { name: "Other", value: 7, color: "#9333ea" },
-]
+];
 
 // Mock data for token holdings
 const tokenHoldings = [
@@ -63,20 +71,30 @@ const tokenHoldings = [
     change: "-3.1%",
     changeColor: "text-red-500",
   },
-]
+];
 
 // Mock data for connected wallets
 const connectedWallets = [
   { name: "Trust Wallet", id: "0x742d...8A4c", chain: "Ethereum" },
   { name: "Phantom", id: "9BpU...T5x7", chain: "Solana" },
   { name: "Polygon", id: "0x1A5...6F3e", chain: "Polygon" },
-]
+];
 
 // Mock data for NFTs
 const nfts = [
-  { name: "CryptoPixel #1523", image: "/nft-pixel-art.jpg", price: "$2,450", floorPrice: "$1,200" },
-  { name: "Digital Ape #4721", image: "/nft-ape.jpg", price: "$8,900", floorPrice: "$7,500" },
-]
+  {
+    name: "CryptoPixel #1523",
+    image: "/nft-pixel-art.jpg",
+    price: "$2,450",
+    floorPrice: "$1,200",
+  },
+  {
+    name: "Digital Ape #4721",
+    image: "/nft-ape.jpg",
+    price: "$8,900",
+    floorPrice: "$7,500",
+  },
+];
 
 // Mock data for recent transactions
 const recentTransactions = [
@@ -110,144 +128,172 @@ const recentTransactions = [
     icon: Gift,
     color: "text-purple-500",
   },
-]
+];
 
 export default function Portfolio() {
-//   const [selectedToken, setSelectedToken] = useState<string | null>(null)
+  const { user } = useAuth();
+  const [balance, setBalance] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      axios
+        .get("http://localhost:5000/balance", {
+          withCredentials: true,
+        })
+        .then((res) => {
+          setBalance(res.data.balance);
+        })
+        .catch((err) => {
+          console.error("Error fetching balance:", err);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [user]);
+
+  if (loading) return <div>Loading balance...</div>;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="pt-20">
         <div className="max-w-7xl mx-auto px-6 py-8 animate-fadeIn">
-          {/* Total Balance Card */}
+
+          {/* Balance & Allocation Card */}
           <div className="animate-slideDown">
-            <Card className="border border-border bg-card/80 backdrop-blur-sm mb-8">
+            <Card className="border-primary/50 bg-card/80 backdrop-blur-sm mb-8">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold">Total Balance</CardTitle>
-                <CardDescription>Your crypto portfolio value</CardDescription>
+                <CardTitle className="text-2xl font-bold">
+                  Portfolio Overview
+                </CardTitle>
+                <CardDescription>
+                  Your crypto portfolio value and distribution
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-4xl font-bold text-foreground">$15,327.45</h2>
-                    <p className="text-sm text-green-500 font-medium mt-2">+$1,245.32 (8.8%) today</p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Left Side - Total Balance */}
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="font-cust text-lg font-semibold mb-2">
+                        Total Balance
+                      </h3>
+                      <h2 className="text-4xl font-bold text-foreground">
+                        ${balance}
+                      </h2>
+                      <p className="text-sm text-green-500 font-medium mt-2">
+                        +$1,245.32 (8.8%) today
+                      </p>
+                    </div>
+                    <ResponsiveContainer width="100%" height={324} className='border border-border border-primary/50'>
+                      <LineChart data={balanceData}>
+                        <defs>
+                          <linearGradient
+                            id="balanceGradient"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="5%"
+                              stopColor="hsl(var(--color-chart-1))"
+                              stopOpacity={0.3}
+                            />
+                            <stop
+                              offset="95%"
+                              stopColor="hsl(var(--color-chart-1))"
+                              stopOpacity={0}
+                            />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="hsl(var(--color-border))"
+                        />
+                        <XAxis
+                          dataKey="date"
+                          stroke="hsl(var(--color-muted-foreground))"
+                        />
+                        <YAxis stroke="hsl(var(--color-muted-foreground))" />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--color-card))",
+                            border: "1px solid hsl(var(--color-border))",
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="balance"
+                          stroke="hsl(var(--color-chart-1))"
+                          fill="url(#balanceGradient)"
+                          strokeWidth={2}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                    <div className="flex gap-2 ">
+                      {["1W", "1M", "3M", "1Y", "5Y", "ALL"].map((period) => (
+                        <Button
+                          key={period}
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs hover:bg-primary/10 hover:text-primary"
+                        >
+                          {period}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={balanceData}>
-                      <defs>
-                        <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--color-chart-1))" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="hsl(var(--color-chart-1))" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--color-border))" />
-                      <XAxis dataKey="date" stroke="hsl(var(--color-muted-foreground))" />
-                      <YAxis stroke="hsl(var(--color-muted-foreground))" />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "hsl(var(--color-card))",
-                          border: "1px solid hsl(var(--color-border))",
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="balance"
-                        stroke="hsl(var(--color-chart-1))"
-                        fill="url(#balanceGradient)"
-                        strokeWidth={2}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                  <div className="flex gap-2">
-                    {["1W", "1M", "3M", "1Y", "5Y", "ALL"].map((period) => (
-                      <Button
-                        key={period}
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs hover:bg-primary/10 hover:text-primary"
-                      >
-                        {period}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
 
-          {/* Token Allocation & Market Overview */}
-          <div
-            className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 animate-slideUp"
-            style={{ animationDelay: "0.1s" }}
-          >
-            {/* Token Allocation */}
-            <Card className="border border-border bg-card/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle>Token Allocation</CardTitle>
-                <CardDescription>Your portfolio distribution</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center space-y-6">
-                  <ResponsiveContainer width="100%" height={250}>
-                    <PieChart>
-                      <Pie
-                        data={tokenAllocation}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={2}
-                        dataKey="value"
-                      >
-                        {tokenAllocation.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
+                  {/* Right Side - Token Allocation */}
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">
+                        Token Allocation
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Portfolio distribution
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-center justify-center space-y-6">
+                      <ResponsiveContainer width="100%" height={250}>
+                        <PieChart>
+                          <Pie
+                            data={tokenAllocation}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={2}
+                            dataKey="value"
+                          >
+                            {tokenAllocation.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="grid grid-cols-2 gap-4 w-full">
+                        {tokenAllocation.map((token) => (
+                          <div
+                            key={token.name}
+                            className="text-center p-3 rounded-lg bg-muted/50"
+                          >
+                            <p className="text-sm font-medium text-foreground">
+                              {token.name}
+                            </p>
+                            <p
+                              className="text-lg font-bold"
+                              style={{ color: token.color }}
+                            >
+                              {token.value}%
+                            </p>
+                          </div>
                         ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="grid grid-cols-2 gap-4 w-full">
-                    {tokenAllocation.map((token) => (
-                      <div key={token.name} className="text-center p-3 rounded-lg bg-muted/50">
-                        <p className="text-sm font-medium text-foreground">{token.name}</p>
-                        <p className="text-lg font-bold" style={{ color: token.color }}>
-                          {token.value}%
-                        </p>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Market Overview */}
-            <Card className="border border-border bg-card/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle>Market Overview</CardTitle>
-                <CardDescription>Top market performers</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                  <p className="text-sm text-muted-foreground mb-1">BTC-USDT</p>
-                  <p className="text-2xl font-bold">$87,588.45</p>
-                  <p className="text-sm text-green-500 font-medium mt-1">+5.2% (24h)</p>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">24h High</span>
-                    <span className="font-medium">$89,245.50</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">24h Low</span>
-                    <span className="font-medium">$82,100.00</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Liquidity</span>
-                    <span className="font-medium">$45.2B</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">24h Volume</span>
-                    <span className="font-medium">$23.8B</span>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -260,7 +306,7 @@ export default function Portfolio() {
             style={{ animationDelay: "0.2s" }}
           >
             {/* Holdings */}
-            <Card className="border border-border bg-card/80 backdrop-blur-sm lg:col-span-2">
+            <Card className="border border-border border-primary/50 bg-card/80 backdrop-blur-sm lg:col-span-2">
               <CardHeader>
                 <CardTitle>Your Holdings</CardTitle>
                 <CardDescription>Top assets in your portfolio</CardDescription>
@@ -274,11 +320,17 @@ export default function Portfolio() {
                     >
                       <div>
                         <p className="font-medium">{token.symbol}</p>
-                        <p className="text-sm text-muted-foreground">{token.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {token.name}
+                        </p>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">{token.amount}</p>
-                        <p className={`text-sm font-medium ${token.changeColor}`}>{token.change}</p>
+                        <p
+                          className={`text-sm font-medium ${token.changeColor}`}
+                        >
+                          {token.change}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -287,19 +339,24 @@ export default function Portfolio() {
             </Card>
 
             {/* Connected Wallets */}
-            <Card className="border border-border bg-card/80 backdrop-blur-sm">
+            <Card className="border border-border border-primary/50 bg-card/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle>Connected Wallets</CardTitle>
                 <CardDescription>Your wallet addresses</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {connectedWallets.map((wallet) => (
-                  <div key={wallet.name} className="p-3 rounded-lg bg-muted/50 border border-border/50">
+                  <div
+                    key={wallet.name}
+                    className="p-3 rounded-lg bg-muted/50 border border-border/50"
+                  >
                     <div className="flex items-center gap-2 mb-2">
                       <Wallet className="w-4 h-4 text-primary" />
                       <p className="font-medium text-sm">{wallet.name}</p>
                     </div>
-                    <p className="text-xs text-muted-foreground font-mono">{wallet.id}</p>
+                    <p className="text-xs text-muted-foreground font-mono">
+                      {wallet.id}
+                    </p>
                     <p className="text-xs text-primary mt-1">{wallet.chain}</p>
                   </div>
                 ))}
@@ -309,7 +366,7 @@ export default function Portfolio() {
 
           {/* NFTs Section */}
           <Card
-            className="border border-border bg-card/80 backdrop-blur-sm mb-8 animate-slideUp"
+            className="border border-border border-primary/50 bg-card/80 backdrop-blur-sm mb-8 animate-slideUp"
             style={{ animationDelay: "0.3s" }}
           >
             <CardHeader>
@@ -323,17 +380,29 @@ export default function Portfolio() {
                     key={nft.name}
                     className="rounded-lg overflow-hidden border border-border/50 hover:border-primary/50 transition"
                   >
-                    <img src={nft.image || "/placeholder.svg"} alt={nft.name} className="w-full h-48 object-cover" />
+                    <img
+                      src={nft.image || "/placeholder.svg"}
+                      alt={nft.name}
+                      className="w-full h-48 object-cover"
+                    />
                     <div className="p-4 bg-muted/30">
                       <p className="font-medium mb-2">{nft.name}</p>
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="text-xs text-muted-foreground">Your Price</p>
-                          <p className="text-sm font-bold text-primary">{nft.price}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Your Price
+                          </p>
+                          <p className="text-sm font-bold text-primary">
+                            {nft.price}
+                          </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs text-muted-foreground">Floor Price</p>
-                          <p className="text-sm font-medium text-green-500">{nft.floorPrice}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Floor Price
+                          </p>
+                          <p className="text-sm font-medium text-green-500">
+                            {nft.floorPrice}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -345,7 +414,7 @@ export default function Portfolio() {
 
           {/* Recent Transactions */}
           <Card
-            className="border border-border bg-card/80 backdrop-blur-sm animate-slideUp"
+            className="border border-border border-primary/50 bg-card/80 backdrop-blur-sm animate-slideUp"
             style={{ animationDelay: "0.4s" }}
           >
             <CardHeader>
@@ -355,30 +424,38 @@ export default function Portfolio() {
             <CardContent>
               <div className="space-y-3">
                 {recentTransactions.map((tx, index) => {
-                  const IconComponent = tx.icon
+                  const IconComponent = tx.icon;
                   return (
                     <div
                       key={index}
                       className="flex items-center justify-between p-4 rounded-lg hover:bg-muted/50 transition border border-border/30"
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`p-2 rounded-full bg-muted/50 ${tx.color}`}>
+                        <div
+                          className={`p-2 rounded-full bg-muted/50 ${tx.color}`}
+                        >
                           <IconComponent className="w-4 h-4" />
                         </div>
                         <div>
                           <p className="font-medium capitalize">{tx.type}</p>
-                          <p className="text-sm text-muted-foreground">{tx.recipient || tx.sender}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {tx.recipient || tx.sender}
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">
                           {tx.amount} {tx.asset}
                         </p>
-                        <p className={`text-sm font-medium ${tx.color}`}>{tx.value}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{tx.time}</p>
+                        <p className={`text-sm font-medium ${tx.color}`}>
+                          {tx.value}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {tx.time}
+                        </p>
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             </CardContent>
@@ -386,5 +463,5 @@ export default function Portfolio() {
         </div>
       </main>
     </div>
-  )
+  );
 }

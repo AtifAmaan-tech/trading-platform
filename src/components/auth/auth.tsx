@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -13,17 +14,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
+import { useAuth } from "./authcontext";
 
 export default function AuthPage({ onLogin }: { onLogin?: () => void }) {
   useEffect(() => {
-    // Prevent body scroll when component mounts
     document.body.style.overflow = "hidden";
-
-    // Re-enable scroll when component unmounts
     return () => {
       document.body.style.overflow = "unset";
     };
   }, []);
+
+  const { setUser } = useAuth();
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -97,26 +98,47 @@ export default function AuthPage({ onLogin }: { onLogin?: () => void }) {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+
+    if (!formData.email || !formData.password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
 
     setIsLoading(true);
-    try {
-      const response = await axios.post("http://localhost:5000/login", {
-        email: formData.email,
-        password: formData.password,
-      });
 
-      const token = response.data.token;
-      if (token) {
-        localStorage.setItem("token", token);
-        toast.success("Login successful! Redirecting...");
-        onLogin?.();
-        navigate("/home");
-      } else {
-        toast.error("Token missing in response");
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/login",
+        {
+          email: formData.email,
+          password: formData.password,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.status === 200) {
+        // Verify session was created
+        const authCheck = await axios.get("http://localhost:5000/auth-status", {
+          withCredentials: true,
+        });
+        
+        if (authCheck.data.logged_in) {
+          setUser(authCheck.data);
+          toast.success("Login successful");
+          onLogin?.();
+          navigate("/home");
+        } else {
+          toast.error("Session creation failed");
+        }
       }
     } catch (error: any) {
-      const msg = error.response?.data?.message || "Login failed";
+      console.error("Login error:", error);
+      const msg =
+        error.response?.data?.msg ||
+        error.response?.data?.message ||
+        "Invalid email or password";
       toast.error(msg);
     } finally {
       setIsLoading(false);
@@ -141,7 +163,8 @@ export default function AuthPage({ onLogin }: { onLogin?: () => void }) {
           headers: { "Content-Type": "application/json" },
         }
       );
-      toast.success("Account created successfully! Logging in...");
+      
+      toast.success("Account created successfully! Please log in.");
       setIsLogin(true);
       setFormData({
         email: formData.email,
