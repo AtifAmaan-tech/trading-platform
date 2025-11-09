@@ -156,9 +156,9 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
       : 0
 
   return (
-    <div className="w-full bg-zinc-900 border border-border border-primary/50">
+    <div className="w-full bg-card border border-border border-primary/30 rounded-lg ">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold pl-3 pt-2">Watchlist</h3>
+        <h3 className="bg-card text-lg font-semibold pl-3 pt-2">Watchlist</h3>
         {coins.length > 0 && (
           <Button
             size="sm"
@@ -187,9 +187,9 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
       ) : (
         <div className="bg-card border border-border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="bg-zinc-900 w-full text-sm">
+            <table className=" w-full text-sm">
               <thead>
-                <tr className="bg-zinc-900 border-b border-border bg-muted/50">
+                <tr className=" border-b border-border bg-muted/50">
                   <th className="px-4 py-3 text-left">
                     <button
                       onClick={() => handleSort("name")}

@@ -186,7 +186,7 @@ export default function AuthPage({ onLogin }: { onLogin?: () => void }) {
       <div className="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
 
-      <Card className="w-full max-w-md relative z-10 border-2 border-border bg-zinc-900 backdrop-blur-sm animate-scaleIn shadow-xl">
+      <Card className="w-full max-w-md relative z-10 border-2 border-border backdrop-blur-sm animate-scaleIn shadow-xl">
         <CardHeader className="space-y-2 text-center">
           <div className="inline-flex items-center justify-center w-12 h-12 mx-auto bg-primary/20 rounded-lg mb-2">
             <div className="w-6 h-6 bg-gradient-to-br from-primary to-accent rounded"></div>

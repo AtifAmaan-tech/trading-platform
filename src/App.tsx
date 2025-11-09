@@ -4,7 +4,7 @@ import ScrollToTop from "./components/dashboard/ScrollToTop";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AuthPage from "./components/auth/auth";
 import Home from "./components/dashboard/Home";
-import TradePage from "./trade/trade";
+import TradePage from "./components/trade/trade";
 import { useAuth } from "./components/auth/authcontext";
 
 function AppRoutes() {

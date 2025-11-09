@@ -136,7 +136,7 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
   }
 
   const CoinCard = ({ coin }: { coin: Coin }) => (
-    <div className="bg-zinc-900 bg-card border border-border rounded-lg p-4 border-primary/50 transition-all shadow-md hover:shadow-lg group">
+    <div className="bg-card border border-border rounded-lg p-4 border-primary/25 transition-all shadow-md hover:shadow-lg group">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">

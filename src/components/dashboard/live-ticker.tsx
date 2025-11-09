@@ -135,7 +135,7 @@ export default function LiveTicker() {
   }
 
 return (
-  <div className="bg-card bg-zinc-900 border border-primary/50 rounded-lg p-4 shadow-sm">
+  <div className="bg-card border border-primary/25 rounded-lg p-4 shadow-sm">
     <div className="flex items-center justify-between mb-4">
       <h3 className="font-semibold text-lg">Live Market Ticker</h3>
       <div className="flex items-center gap-2">

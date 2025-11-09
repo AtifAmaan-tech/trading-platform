@@ -1,44 +1,60 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 
-const navItems = ["Dashboard", "Trade", "Portfolio"]
+const navItems = ["Dashboard", "Trade", "Portfolio"];
 
 export default function Navbar() {
-  const [activeTab, setActiveTab] = useState("Dashboard")
-  const navigate = useNavigate()
-  const location = useLocation()
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.pathname);
+  const navigate = useNavigate();
 
-  // 🔹 Sync active tab with current URL
+  // 🔹 Avatar menu state
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
-    if (location.pathname === "/") setActiveTab("Dashboard")
-    else if (location.pathname === "/trade") setActiveTab("Trade")
-    else if (location.pathname === "/portfolio") setActiveTab("Portfolio")
-    else if (location.pathname === "/orders") setActiveTab("Orders")
-    else if (location.pathname === "/leaderboard") setActiveTab("Leaderboard")
-    else if (location.pathname === "/settings") setActiveTab("Settings")
-  }, [location.pathname])
+    if (location.pathname === "/" || location.pathname === "/home")
+      setActiveTab("Dashboard");
+    else if (location.pathname === "/trade") setActiveTab("Trade");
+    else if (location.pathname === "/portfolio") setActiveTab("Portfolio");
+  }, [location.pathname]);
 
   const handleNavClick = (item: string) => {
-    setActiveTab(item)
-    if (item === "Dashboard") navigate("/")
-    if (item === "Trade") navigate("/trade")
-    if (item === "Portfolio") navigate("/portfolio")
-    if (item === "Orders") navigate("/orders")
-    if (item === "Leaderboard") navigate("/leaderboard")
-    if (item === "Settings") navigate("/settings")
-  }
+    setActiveTab(item);
+    if (item === "Dashboard") navigate("/");
+    if (item === "Trade") navigate("/trade");
+    if (item === "Portfolio") navigate("/portfolio");
+  };
+
+  const handleLogout = () => {
+    console.log("Logging out...");
+    navigate("/login");
+  };
+
+  // 🔹 Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
-      <div className="max-w-7xl mx-auto py-4 flex items-center justify-between">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background border-b">
+      <div className="mx-auto px-12 py-4 flex items-center justify-between">
+        {/* Logo + Nav links */}
         <div className="flex items-center gap-8">
-          <div className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+          <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent">
             TradeX
           </div>
+
           <div className="hidden md:flex gap-1">
             {navItems.map((item) => (
               <button
@@ -55,20 +71,36 @@ export default function Navbar() {
             ))}
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Avatar className="cursor-pointer hover:opacity-80 transition-opacity">
-              <AvatarImage src="https://api.dicebear.com/9.x/fun-emoji/svg" alt="avatar" />
+
+        {/* ✅ Custom Avatar Menu */}
+        <div className="relative" ref={menuRef}>
+          <Button
+            variant="ghost"
+            className="relative h-10 w-10 rounded-full p-0"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            <Avatar className="h-10 w-10">
+              <AvatarImage
+                src="https://api.dicebear.com/9.x/fun-emoji/svg"
+                alt="avatar"
+              />
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Logout</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </Button>
+
+          {/* Custom dropdown menu */}
+          {menuOpen && (
+            <div className="absolute left-1/2 -translate-x-1/2  mt-2 w-21 h-9 rounded-lg border border-primary">
+              <button
+                onClick={handleLogout}
+                className="w-full ml-4 mt-1 text-left hover:bg-muted rounded-md"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
-  )
+  );
 }
