@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "../auth/authcontext";
 
 const navItems = ["Dashboard", "Trade", "Portfolio"];
 
@@ -11,6 +12,7 @@ export default function Navbar() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(location.pathname);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   // 🔹 Avatar menu state
   const [menuOpen, setMenuOpen] = useState(false);
@@ -30,9 +32,17 @@ export default function Navbar() {
     if (item === "Portfolio") navigate("/portfolio");
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     console.log("Logging out...");
-    navigate("/login");
+
+    try {
+      logout();
+      console.log("Logout successfull");
+    } catch (err) {
+      console.error("Error logging out:", err);
+    }
+
+    navigate("/");
   };
 
   // 🔹 Close menu when clicking outside
@@ -47,7 +57,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background border-b">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background">
       <div className="mx-auto px-12 py-4 flex items-center justify-between">
         {/* Logo + Nav links */}
         <div className="flex items-center gap-8">
@@ -62,7 +72,7 @@ export default function Navbar() {
                 onClick={() => handleNavClick(item)}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   activeTab === item
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-gradient-to-r from-purple-800 to-purple-700 hover:from-purple-600 hover:to-purple-700 text-white rounded-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >

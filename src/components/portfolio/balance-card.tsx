@@ -1,11 +1,9 @@
 "use client"
 
-import { useState,useEffect } from "react"
-import { useAuth } from "../auth/authcontext"
+import { useState } from "react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import axios from "axios"
 
 const chartData = [
   { time: "00:00", value: 14200 },
@@ -18,34 +16,12 @@ const chartData = [
 ]
 
 const timeFilters = ["1W", "1M", "3M", "1Y", "5Y", "ALL"]
+interface PortfolioProps {
+  balance: number;
+}
 
-export function BalanceCard() {
+export function BalanceCard({ balance }: PortfolioProps) {
   const [selectedFilter, setSelectedFilter] = useState("1W")
-  const { user } = useAuth();
-  const [balance, setBalance] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-
-
-
-    useEffect(() => {
-    if (user) {
-      axios
-        .get("http://localhost:5000/balance", {
-          withCredentials: true,
-        })
-        .then((res) => {
-          setBalance(res.data.balance);
-        })
-        .catch((err) => {
-          console.error("Error fetching balance:", err);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
-  }, [user]);
-
-   if (loading) return <div>Loading balance...</div>;
 
   return (
     <Card className="glass-effect border-primary/30 p-6 glow-purple-box">

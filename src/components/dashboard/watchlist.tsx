@@ -149,14 +149,9 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
   }
 
   const sortedCoins = getSortedCoins()
-  const totalValue = sortedCoins.reduce((sum, symbol) => sum + (coinData[symbol]?.price || 0), 0)
-  const avgChange =
-    sortedCoins.length > 0
-      ? sortedCoins.reduce((sum, symbol) => sum + (coinData[symbol]?.change24h || 0), 0) / sortedCoins.length
-      : 0
 
   return (
-    <div className="w-full bg-card border border-border border-primary/30 rounded-lg ">
+    <div className="w-full bg-card border border-border border-primary/30 rounded-lg">
       <div className="flex items-center justify-between mb-4">
         <h3 className="bg-card text-lg font-semibold pl-3 pt-2">Watchlist</h3>
         {coins.length > 0 && (
@@ -190,7 +185,7 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
             <table className=" w-full text-sm">
               <thead>
                 <tr className=" border-b border-border bg-muted/50">
-                  <th className="px-4 py-3 text-left">
+                  <th className="px-4 py-3">
                     <button
                       onClick={() => handleSort("name")}
                       className="flex items-center gap-2 font-semibold text-xs hover:text-foreground transition-colors"

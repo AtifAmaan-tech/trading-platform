@@ -8,7 +8,11 @@ import { ConnectedWalletsCard } from "./connected-wallets-card";
 import { NFTsSection } from "./nfts-section";
 import { RecentTransactionsSection } from "./recent-transactions.section";
 
-export default function DashboardPage() {
+interface PortfolioProps {
+  balance: number;
+}
+
+export default function Portfolio({ balance }: PortfolioProps) {
   return (
     <div className="dark min-h-screen bg-background text-foreground">
       <Navbar />
@@ -17,7 +21,7 @@ export default function DashboardPage() {
         {/* Top Section - Balance and Token Allocation */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2">
-            <BalanceCard />
+            <BalanceCard balance = {balance}/>
           </div>
           <div>
             <TokenAllocationCard />

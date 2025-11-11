@@ -24,7 +24,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
-      <main className="pt-20">
+      <main className="pt-12">
         <div className="w-full mx-auto px-6 py-8 animate-fadeIn">
           <div className="animate-slideDown">
             <SearchBar onSelectCoin={setSelectedCoin} />

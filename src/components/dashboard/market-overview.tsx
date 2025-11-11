@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { TrendingUp, TrendingDown, Volume2, Star, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import useCryptoPrice from "../hooks/useCryptoPrice"
 
 interface Coin {
   symbol: string
@@ -29,8 +30,9 @@ const COIN_CONFIGS: CoinConfig[] = [
   { symbol: "ADA", name: "Cardano", apiSymbol: "ADAUSDT" },
   { symbol: "DOGE", name: "Dogecoin", apiSymbol: "DOGEUSDT" },
   { symbol: "BNB", name: "BNB", apiSymbol: "BNBUSDT" },
-  { symbol: "AVAX", name: "Avalanche", apiSymbol: "AVAXUSDT" },
-  { symbol: "LINK", name: "Chainlink", apiSymbol: "LINKUSDT" },
+  { symbol: "TRX", name: "TRX", apiSymbol: "TRXUSDT" },
+  { symbol: "SUI", name: "SUI", apiSymbol: "SUIUSDT" },
+  { symbol: "MATIC", name: "MATIC", apiSymbol: "POLUSDT" },
 ]
 
 interface MarketOverviewProps {
@@ -44,9 +46,10 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
   const [coins, setCoins] = useState<Coin[]>([])
   const [displayData, setDisplayData] = useState<Coin[]>([])
   const [favorites, setFavorites] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
-  const intervalRef = useRef<number | null>(null)
+
+  // Use the custom hook for live prices
+  const { prices, loading, error } = useCryptoPrice()
 
   useEffect(() => {
     const stored = localStorage.getItem("favorites")
@@ -59,7 +62,8 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
     }
   }, [])
 
-  const fetchMarketData = async () => {
+  // Fetch 24h data (volume, change, high, low) from Binance
+  const fetch24hData = async () => {
     try {
       const responses = await Promise.all(
         COIN_CONFIGS.map(config =>
@@ -74,13 +78,16 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
           if (!data || !data.lastPrice) return null
 
           const config = COIN_CONFIGS[index]
+          // Use price from the hook if available, otherwise use API price
+          const currentPrice = prices[config.symbol] || parseFloat(data.lastPrice)
+          
           return {
             symbol: config.symbol,
             name: config.name,
-            price: parseFloat(data.lastPrice),
+            price: currentPrice,
             change24h: parseFloat(data.priceChangePercent),
             volume: parseFloat(data.quoteVolume),
-            marketCap: 0, // Binance doesn't provide market cap in this endpoint
+            marketCap: 0,
             high24h: parseFloat(data.highPrice),
             low24h: parseFloat(data.lowPrice),
           }
@@ -88,24 +95,30 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
         .filter((coin): coin is Coin => coin !== null)
 
       setCoins(newCoins)
-      setIsLoading(false)
       setLastUpdate(new Date())
     } catch (err) {
       console.error("Error fetching market data:", err)
-      setIsLoading(false)
     }
   }
 
+  // Fetch 24h data on mount and every 30 seconds (since prices update every 10s via hook)
   useEffect(() => {
-    fetchMarketData()
-    intervalRef.current = setInterval(fetchMarketData, 10000) // Update every 10 seconds
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
+    fetch24hData()
+    const interval = setInterval(fetch24hData, 30000)
+    return () => clearInterval(interval)
   }, [])
+
+  // Update coin prices when the hook updates prices
+  useEffect(() => {
+    if (Object.keys(prices).length > 0 && coins.length > 0) {
+      setCoins(prevCoins => 
+        prevCoins.map(coin => ({
+          ...coin,
+          price: prices[coin.symbol] || coin.price
+        }))
+      )
+    }
+  }, [prices])
 
   useEffect(() => {
     if (coins.length === 0) return
@@ -130,7 +143,9 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
   }, [filter, coins])
 
   const toggleFavorite = (symbol: string) => {
-    const updated = favorites.includes(symbol) ? favorites.filter((s) => s !== symbol) : [...favorites, symbol]
+    const updated = favorites.includes(symbol) 
+      ? favorites.filter((s) => s !== symbol) 
+      : [...favorites, symbol]
     setFavorites(updated)
     localStorage.setItem("favorites", JSON.stringify(updated))
   }
@@ -144,7 +159,9 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
             <button
               onClick={() => toggleFavorite(coin.symbol)}
               className={`transition-colors ${
-                favorites.includes(coin.symbol) ? "text-yellow-500" : "text-muted-foreground hover:text-yellow-500"
+                favorites.includes(coin.symbol) 
+                  ? "text-yellow-500" 
+                  : "text-muted-foreground hover:text-yellow-500"
               }`}
             >
               <Star className="w-4 h-4" fill={favorites.includes(coin.symbol) ? "currentColor" : "none"} />
@@ -165,7 +182,7 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
       </div>
 
       <div className="space-y-3">
-        <div className="flex justify-between items-center ">
+        <div className="flex justify-between items-center">
           <span className="text-muted-foreground text-sm">Price</span>
           <span className="font-semibold">
             ${coin.price > 1000 ? coin.price.toFixed(2) : coin.price.toFixed(4)}
@@ -216,15 +233,22 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
           <Button
             size="sm"
             variant="outline"
-            onClick={fetchMarketData}
-            disabled={isLoading}
+            onClick={fetch24hData}
+            disabled={loading}
             className="gap-2"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
         </div>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-500 text-sm">
+          Error fetching prices: {error}
+        </div>
+      )}
 
       {/* Filter Controls */}
       <div className="flex gap-2 flex-wrap">
@@ -261,9 +285,9 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
       </div>
 
       {/* Loading State */}
-      {isLoading && coins.length === 0 ? (
+      {loading && coins.length === 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(10)].map((_, i) => (
             <div key={i} className="bg-card border border-border rounded-lg p-4 animate-pulse">
               <div className="h-6 bg-muted rounded w-20 mb-2"></div>
               <div className="h-4 bg-muted rounded w-32 mb-4"></div>
