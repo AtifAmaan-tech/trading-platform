@@ -8,14 +8,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import useCryptoPrice from "../hooks/useCryptoPrice";
 import Navbar from "@/components/dashboard/navbar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Alert } from "../ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Clock } from "lucide-react";
+import BinanceCandlestick from "./candle-stick-graph";
 
 interface TradeStats {
   price: number;
@@ -40,15 +42,19 @@ interface PortfolioProps {
 }
 
 export default function TradePage({ balance }: PortfolioProps) {
+  const { prices } = useCryptoPrice();
   const [orderType, setOrderType] = useState<"market" | "limit">("market");
   const [tradeType, setTradeType] = useState<"buy" | "sell">("buy");
-  const [amount, setAmount] = useState<number>(0);
+  // const [amount, setAmount] = useState<number>(0);
   const [price, setPrice] = useState<number>(0);
-  const [sliderValue, setSliderValue] = useState([25]);
+  const [sliderValue, setSliderValue] = useState([0]);
   const [selectedCrypto, setSelectedCrypto] = useState("BTC");
+  const [balError, setbalerror] = useState("");
+  const [inputAmount, setInputAmount] = useState<string>("");
 
+  const amount = parseFloat(inputAmount) || 0;
   const stats: TradeStats = {
-    price: 45230.5,
+    price: prices.BTC,
     change24h: 2.45,
     high24h: 46800,
     low24h: 43200,
@@ -59,7 +65,7 @@ export default function TradePage({ balance }: PortfolioProps) {
   const cryptos = [
     { symbol: "BTC", name: "Bitcoin", icon: "" },
     { symbol: "ETH", name: "Ethereum", icon: "" },
-    { symbol: "USDT", name: "Tether", icon: "" },
+    { symbol: "TRX", name: "Tron", icon: "" },
     { symbol: "BNB", name: "Binance Coin", icon: "" },
     { symbol: "SOL", name: "Solana", icon: "" },
     { symbol: "DOGE", name: "Doge", icon: "" },
@@ -67,7 +73,6 @@ export default function TradePage({ balance }: PortfolioProps) {
     { symbol: "POL", name: "Matic", icon: "" },
     { symbol: "SUI", name: "Sui", icon: "" },
     { symbol: "ADA", name: "Cardano", icon: "" },
-    // add more...
   ];
 
   const recentTrades: RecentTrade[] = [
@@ -126,16 +131,34 @@ export default function TradePage({ balance }: PortfolioProps) {
 
   const handleSubmit = (e: { preventDefault: () => void }): void => {
     e.preventDefault();
+
+    const total = (parseFloat(inputAmount) || 0) * prices[selectedCrypto];
+
+    if (total > balance) {
+      setbalerror("Not enough funds!");
+      setTimeout(() => setbalerror(""), 2000);
+      return; // stop execution
+    }
+
+    if (tradeType === "sell" && amount > 100) {
+      setbalerror(`Not enough ${selectedCrypto}!`);
+      setTimeout(() => setbalerror(""), 2000);
+      return;
+    }
     const orderData: OrderData = {
       crypto: selectedCrypto,
       orderType: orderType,
       tradeType: tradeType,
-      price: price,
+      price: prices[selectedCrypto],
       amount: amount,
-      total: amount * price,
+      total,
     };
-    console.log("printing values");
+
+    console.log(orderData.amount);
+    console.log(orderData.price);
+    console.log(orderData.total);
     console.log(orderData);
+    setbalerror("");
   };
 
   const handleSliderChange = (value: number[]): void => {
@@ -145,16 +168,16 @@ export default function TradePage({ balance }: PortfolioProps) {
     const availableBalance: number = tradeType === "buy" ? balance : balance; // btcBalance for selling
     const calculatedAmount: number =
       tradeType === "buy"
-        ? (availableBalance * percentage) / stats.price // Convert USD to BTC
+        ? (availableBalance * percentage) / prices[selectedCrypto] // Convert USD to BTC
         : availableBalance * percentage; // Direct BTC amount
-
-    setAmount(calculatedAmount);
+    const strCalAmount = String(calculatedAmount);
+    setInputAmount(strCalAmount);
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
-      <main className="pt-12">
+      <main className="pt-5">
         <div className="w-full mx-auto px-6 py-8">
           {/* Main Trading Area */}
           <div
@@ -169,26 +192,23 @@ export default function TradePage({ balance }: PortfolioProps) {
                   <h2 className="text-xl font-bold">Place Order</h2>
 
                   {/* Choose crypto token */}
-                  <div className="mb-4">
-                    <label className="text-sm font-medium mb-2 block">
-                      Select Cryptocurrency
-                    </label>
+                  <div className="mb-2 ">
                     <Select
                       value={selectedCrypto}
                       onValueChange={setSelectedCrypto}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full ">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {cryptos.map((crypto) => (
                           <SelectItem key={crypto.symbol} value={crypto.symbol}>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 ">
                               <span>{crypto.icon}</span>
                               <span className="font-medium">
                                 {crypto.symbol}
                               </span>
-                              <span className="text-muted-foreground text-sm">
+                              <span className="text-muted-foreground text-sm pr-9 ">
                                 {crypto.name}
                               </span>
                             </div>
@@ -196,6 +216,13 @@ export default function TradePage({ balance }: PortfolioProps) {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="mb-0 pb-0 flex items-center">
+                    {selectedCrypto}/USDT
+                    <span className="ml-2 w-24 text-right font-mono">
+                      ${prices[selectedCrypto]}
+                    </span>
                   </div>
 
                   {/* Order Type Toggle */}
@@ -233,8 +260,8 @@ export default function TradePage({ balance }: PortfolioProps) {
                       variant={tradeType === "buy" ? "default" : "outline"}
                       className={`flex-1 rounded-none h-11 ${
                         tradeType === "buy"
-                          ? "bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg"
-                          : "flex-1 rounded-lg hover:bg-transparent"
+                          ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg"
+                          : "flex-1 rounded-lg hover:bg-transparent bg:transparent"
                       }`}
                       onClick={() => setTradeType("buy")}
                     >
@@ -245,8 +272,8 @@ export default function TradePage({ balance }: PortfolioProps) {
                       variant={tradeType === "sell" ? "default" : "outline"}
                       className={`flex-1 rounded-none h-11 ${
                         tradeType === "sell"
-                          ? "bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg"
-                          : "flex-1 rounded-lg hover:bg-transparent"
+                          ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg"
+                          : "flex-1 rounded-lg bg:transparent hover:bg-transparent"
                       }`}
                       onClick={() => setTradeType("sell")}
                     >
@@ -264,8 +291,15 @@ export default function TradePage({ balance }: PortfolioProps) {
                         type="number"
                         placeholder="Enter price"
                         value={price || ""}
-                        onChange={(e) => setPrice(Number(e.target.value))}
-                        className="bg-input border-border/50"
+                        onChange={(e) => {
+                          // Only convert if not empty
+                          if (e.target.value !== "") {
+                            setPrice(parseFloat(e.target.value) || 0);
+                          } else {
+                            setPrice(0);
+                          }
+                        }}
+                        className="bg-input border-border/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
                     </div>
                   )}
@@ -273,14 +307,18 @@ export default function TradePage({ balance }: PortfolioProps) {
                   {/* Amount Input */}
                   <div>
                     <label className="text-sm font-medium mb-2 block">
-                      Amount (BTC)
+                      Amount {selectedCrypto}
                     </label>
                     <Input
                       type="number"
                       placeholder="0.00"
-                      value={amount || ""}
-                      onChange={(e) => setAmount(Number(e.target.value))}
-                      className="bg-input border-border/50"
+                      value={inputAmount}
+                      onChange={(e) => {
+                        // Only convert if not empty
+
+                        setInputAmount(e.target.value);
+                      }}
+                      className="bg-input border-border/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
                   </div>
 
@@ -317,7 +355,8 @@ export default function TradePage({ balance }: PortfolioProps) {
                             tradeType === "buy"
                               ? (balance * (percent / 100)) / stats.price
                               : balance * (percent / 100);
-                          setAmount(calculatedAmount);
+                          const strCalAmount = String(calculatedAmount);
+                          setInputAmount(strCalAmount);
                         }}
                         className="text-xs bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg h-11"
                       >
@@ -327,20 +366,27 @@ export default function TradePage({ balance }: PortfolioProps) {
                   </div>
 
                   {/* Total */}
-                  <Card className="p-4 bg-card/30 border-border/50">
+                  <Card className="p-4 py-0 my-0 bg-card/30 border-border/50">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">
                         Total:
                       </span>
                       <span className="text-lg font-bold text-primary">
                         $
-                        {(amount * stats.price).toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                        })}
+                        {(amount * prices[selectedCrypto]).toLocaleString(
+                          "en-US",
+                          {
+                            minimumFractionDigits: 2,
+                          }
+                        )}
                       </span>
                     </div>
                   </Card>
-
+                  {balError && (
+                    <Alert variant="destructive" className="flex items-center">
+                      {balError}
+                    </Alert>
+                  )}
                   {/* Trade Button */}
                   <Button
                     onClick={handleSubmit}
@@ -349,78 +395,31 @@ export default function TradePage({ balance }: PortfolioProps) {
                     className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg h-11"
                     variant={tradeType === "buy" ? "default" : "destructive"}
                   >
-                    {tradeType === "buy" ? "Buy BTC" : "Sell BTC"}
+                    {tradeType === "buy"
+                      ? `Buy ${selectedCrypto}`
+                      : `Sell ${selectedCrypto}`}
                   </Button>
                 </Card>
               </div>
             </form>
 
+            
+
             {/* Center - Chart Area */}
             <div className="border lg:col-span-2">
-              <Card className=" p-6 border-primary/30 backdrop-blur-sm h-full min-h-[600px] flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold flex items-center gap-2">
-                    <BarChart3 size={20} className="text-primary" />
-                    Price Chart
-                  </h2>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      1H
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-primary/50 text-primary bg-transparent"
-                    >
-                      4H
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      1D
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      1W
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Candlestick Chart Placeholder */}
-                <div className="flex-1 bg-gradient-to-b from-card/50 to-card/30 rounded-lg border border-border/30 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 flex items-end justify-center gap-1 p-4">
-                    {/* Simulated Candlesticks */}
-                    {Array.from({ length: 20 }).map((_, i) => {
-                      const height = Math.random() * 80 + 20;
-                      const open = Math.random() > 0.5;
-                      return (
-                        <div
-                          key={i}
-                          className="flex flex-col items-center gap-1 flex-1 h-full justify-end"
-                        >
-                          <div
-                            className="w-full bg-border/30 rounded-sm"
-                            style={{ height: `${height * 0.3}%` }}
-                          />
-                          <div
-                            className={`w-3/4 rounded-sm transition-all ${
-                              open ? "bg-green-500/60" : "bg-red-500/60"
-                            }`}
-                            style={{ height: `${height}%` }}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <p className="text-muted-foreground text-sm relative z-10">
-                    Chart visualization area
-                  </p>
-                </div>
-              </Card>
+              <BinanceCandlestick
+                selectedCrypto={selectedCrypto}
+                prices={prices}
+              />
             </div>
+
+
 
             {/* Right Panel - Recent Trades */}
             <div className="lg:col-span-1">
               <Card className="p-6 border-primary/30 backdrop-blur-sm h-full">
                 <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  <Clock size={20} className="text-primary" />
+                  {/* <Clock size={20} className="text-primary" /> */}
                   Recent Trades
                 </h2>
 
