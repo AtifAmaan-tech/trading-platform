@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import BinanceCandlestick from "./candle-stick-graph";
+import RecentTrades from "./live-trades";
 
 interface TradeStats {
   price: number;
@@ -187,8 +188,8 @@ export default function TradePage({ balance }: PortfolioProps) {
           >
             {/* Left Panel - Trading Controls */}
             <form>
-              <div className="border lg:col-span-1">
-                <Card className="p-6 border border-primary/30 backdrop-blur-sm sticky top-24 space-y-4 ">
+              <div className="lg:col-span-1">
+                <Card className="p-6 border border-primary/30 sticky top-24 space-y-4 text-left">
                   <h2 className="text-xl font-bold">Place Order</h2>
 
                   {/* Choose crypto token */}
@@ -406,7 +407,7 @@ export default function TradePage({ balance }: PortfolioProps) {
             
 
             {/* Center - Chart Area */}
-            <div className="border lg:col-span-2">
+            <div className="lg:col-span-2">
               <BinanceCandlestick
                 selectedCrypto={selectedCrypto}
                 prices={prices}
@@ -417,48 +418,7 @@ export default function TradePage({ balance }: PortfolioProps) {
 
             {/* Right Panel - Recent Trades */}
             <div className="lg:col-span-1">
-              <Card className="p-6 border-primary/30 backdrop-blur-sm h-full">
-                <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  {/* <Clock size={20} className="text-primary" /> */}
-                  Recent Trades
-                </h2>
-
-                <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                  {recentTrades.map((trade) => (
-                    <div
-                      key={trade.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-card/30 border border-border/30 hover:border-primary/30 transition-all"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge
-                            variant={
-                              trade.type === "buy" ? "default" : "destructive"
-                            }
-                            className="text-xs"
-                          >
-                            {trade.type.toUpperCase()}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {trade.timestamp}
-                          </span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {trade.trader}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-semibold">
-                          ${trade.price.toLocaleString()}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {trade.amount} BTC
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
+            <RecentTrades selectedCrypto = {selectedCrypto}/>
             </div>
           </div>
 
@@ -479,7 +439,8 @@ export default function TradePage({ balance }: PortfolioProps) {
                   >
                     Trade History
                   </TabsTrigger>
-                  <TabsTrigger
+
+                  {/* <TabsTrigger
                     value="orders"
                     className="rounded-sm border-b-2 border-transparent data-[state=active]:border-primary  data-[state=active]:bg-gradient-to-r 
          data-[state=active]:from-purple-800 
@@ -487,7 +448,8 @@ export default function TradePage({ balance }: PortfolioProps) {
          data-[state=active]:text-white"
                   >
                     Active Orders
-                  </TabsTrigger>
+                  </TabsTrigger> */}
+
                   <TabsTrigger
                     value="assets"
                     className="rounded-sm border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-gradient-to-r 
@@ -497,7 +459,8 @@ export default function TradePage({ balance }: PortfolioProps) {
                   >
                     My Assets
                   </TabsTrigger>
-                  <TabsTrigger
+
+                  {/* <TabsTrigger
                     value="favorites"
                     className="rounded-sm border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-gradient-to-r 
          data-[state=active]:from-purple-800 
@@ -505,7 +468,8 @@ export default function TradePage({ balance }: PortfolioProps) {
          data-[state=active]:text-white"
                   >
                     Favorites
-                  </TabsTrigger>
+                  </TabsTrigger> */}
+
                 </TabsList>
 
                 <TabsContent value="history" className="p-6">

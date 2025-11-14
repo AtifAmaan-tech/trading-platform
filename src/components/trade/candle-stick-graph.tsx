@@ -1,10 +1,4 @@
 import React, { useState, useEffect } from "react";
-// import {
-//   Tooltip,
-//   TooltipContent,
-//   TooltipTrigger,
-// } from "@/components/ui/tooltip";
-
 import CandleStats from "./candle-stats";
 
 export interface Candle {
@@ -27,7 +21,7 @@ const BinanceCandlestickChart: React.FC<Props> = ({
   prices,
 }) => {
   const [candles, setCandles] = useState<Candle[]>([]);
-  const [timeframe, setTimeframe] = useState<"1h" | "4h" | "1d" | "1w">("4h");
+  const [timeframe, setTimeframe] = useState<"1h" | "4h" | "1d" | "1w">("1h");
   const [loading, setLoading] = useState(true);
   const [selectedCandle, setSelectedCandle] = useState<Candle | null>(null);
   const [hoveredCandle, setHoveredCandle] = useState<Candle | null>(null);
@@ -78,7 +72,7 @@ const BinanceCandlestickChart: React.FC<Props> = ({
 
   useEffect(() => {
    setHoveredCandle(candles[0])
-  }, []);
+  }, [candles]);
 
   const renderCandlestick = (
     candle: Candle,
@@ -93,7 +87,7 @@ const BinanceCandlestickChart: React.FC<Props> = ({
     const x = index * spacing + 40;
 
     const isGreen = candle.close >= candle.open;
-    const isSelected = selectedCandle?.time === candle.time;
+    // const isSelected = selectedCandle?.time === candle.time;
     const color = isGreen ? "#10b981" : "#ef4444";
 
     const highY = ((maxPrice - candle.high) / priceRange) * chartHeight + 20;
@@ -110,7 +104,7 @@ const BinanceCandlestickChart: React.FC<Props> = ({
         onClick={() => setSelectedCandle(candle)}
         style={{ cursor: "pointer" }}
       >
-        {isSelected && (
+        {/* {isSelected && (
           <rect
             x={x - 4}
             y={highY - 4}
@@ -121,7 +115,7 @@ const BinanceCandlestickChart: React.FC<Props> = ({
             strokeWidth={2}
             rx={2}
           />
-        )}
+        )} */}
         
         <line
           x1={x + candleWidth / 2}
@@ -147,9 +141,9 @@ const BinanceCandlestickChart: React.FC<Props> = ({
 
   if (loading) {
     return (
-      <div className="bg-[#0a0b0f] rounded-2xl p-6">
+      <div className=" rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-white text-xl font-semibold">Price Chart</h2>
+          <h2 className="text-xl font-bold text-white">Price Chart</h2>
         </div>
         <div className="flex items-center justify-center h-[600px] text-gray-400">
           Loading chart data...
@@ -166,7 +160,7 @@ const BinanceCandlestickChart: React.FC<Props> = ({
   return (
     <div className="bg-[#0a0b0f] rounded-2xl p-6 border border-primary/30">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-white text-xl font-semibold">Price Chart</h2>
+        <h2 className="text-white text-xl font-bold pb-2">Price Chart</h2>
         <div className="flex gap-2">
           {(["1h", "4h", "1d", "1w"] as const).map((tf) => (
             <button
@@ -189,7 +183,7 @@ const BinanceCandlestickChart: React.FC<Props> = ({
       </div>
 
       <div className="relative bg-[#13141a] rounded-xl overflow-hidden">
-        <svg width={candles.length * 16 + 80} height="539">
+        <svg width={candles.length * 16 + 80} height="561">
           <defs>
             <linearGradient id="bgGradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#1a1b24" stopOpacity="0.5" />

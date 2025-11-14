@@ -6,13 +6,14 @@ export default function CandleStats({
   selectedCandle,
 }: {
   selectedCandle: Candle;
+
 }) {
-
-
-  return (
+  return  (
     <div className="z-10 mb-2">
       <div className="flex justify-content left mb-3 ml-2 text-xs text-white">
-        Time: {new Date(selectedCandle.time).toLocaleString()}
+        Time: {new Date(selectedCandle.time).toLocaleString("en-IN", {
+  hour12: true,
+})}
       </div>
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <div>
@@ -44,7 +45,7 @@ export default function CandleStats({
         <div>
           <div className="text-gray-400 text-xs">Trades</div>
           <div className="text-white text-sm font-semibold">
-             {selectedCandle.trade.toLocaleString()}
+            {selectedCandle.trade.toLocaleString()}
           </div>
         </div>
 
