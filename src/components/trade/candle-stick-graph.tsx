@@ -45,7 +45,6 @@ const BinanceCandlestickChart: React.FC<Props> = ({
       }
 
       const data = await response.json();
-      console.log(data)
       const formattedCandles: Candle[] = data.map((candle: any[]) => ({
         time: candle[0],
         open: parseFloat(candle[1]),
@@ -53,7 +52,7 @@ const BinanceCandlestickChart: React.FC<Props> = ({
         low: parseFloat(candle[3]),
         close: parseFloat(candle[4]),
         volume: parseFloat(candle[5]),
-        trade: parseFloat(candle[8])
+        trade: parseFloat(candle[8]),
       }));
 
       setCandles(formattedCandles);
@@ -71,7 +70,7 @@ const BinanceCandlestickChart: React.FC<Props> = ({
   }, [selectedCrypto, timeframe]);
 
   useEffect(() => {
-   setHoveredCandle(candles[0])
+    setHoveredCandle(candles[0]);
   }, [candles]);
 
   const renderCandlestick = (
@@ -116,7 +115,7 @@ const BinanceCandlestickChart: React.FC<Props> = ({
             rx={2}
           />
         )} */}
-        
+
         <line
           x1={x + candleWidth / 2}
           y1={highY}
@@ -142,7 +141,7 @@ const BinanceCandlestickChart: React.FC<Props> = ({
   if (loading) {
     return (
       <div className=" rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex align-item-centre">
           <h2 className="text-xl font-bold text-white">Price Chart</h2>
         </div>
         <div className="flex items-center justify-center h-[600px] text-gray-400">
@@ -158,31 +157,38 @@ const BinanceCandlestickChart: React.FC<Props> = ({
     prices[selectedCrypto] || candles[candles.length - 1]?.close || 0;
 
   return (
-    <div className="bg-[#0a0b0f] rounded-2xl p-6 border border-primary/30">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-white text-xl font-bold pb-2">Price Chart</h2>
-        <div className="flex gap-2">
-          {(["1h", "4h", "1d", "1w"] as const).map((tf) => (
-            <button
-              key={tf}
-              onClick={() => setTimeframe(tf)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                timeframe === tf
-                  ? "bg-purple-600 text-white"
-                  : "bg-transparent text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600"
-              }`}
-            >
-              {tf.toUpperCase()}
-            </button>
-          ))}
-        </div>
+    <div className="relative bg-[#0a0b0f] rounded-2xl p-2 border border-primary/30">
+      {/* CENTERED TITLE */}
+      <div className="flex justify-center py-3">
+        <h2 className="text-xl font-bold">Price Chart</h2>
       </div>
 
-      <div className="relative left-0 z-50">
+      {/* HOVERED CANDLE DATA */}
+      <div className="relative z-50">
         {hoveredCandle && <CandleStats selectedCandle={hoveredCandle} />}
       </div>
 
+      {/* CHART BLOCK */}
       <div className="relative bg-[#13141a] rounded-xl overflow-hidden">
+        {/* FLOATING TOP-RIGHT BUTTONS */}
+        <div className="absolute top-2 right-2 z-20 opacity-60 hover:opacity-100 transition-opacity">
+          <div className="flex gap-2">
+            {(["1h", "4h", "1d", "1w"] as const).map((tf) => (
+              <button
+                key={tf}
+                onClick={() => setTimeframe(tf)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  timeframe === tf
+                    ? "bg-purple-600 text-white"
+                    : "bg-transparent text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600"
+                }`}
+              >
+                {tf.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <svg width={candles.length * 16 + 80} height="561">
           <defs>
             <linearGradient id="bgGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -218,6 +224,7 @@ const BinanceCandlestickChart: React.FC<Props> = ({
         </svg>
       </div>
 
+      {/* FOOTER TEXT */}
       <div className="mt-4 flex items-center justify-between text-sm">
         <div className="text-gray-400">
           Current Price:{" "}

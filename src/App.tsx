@@ -12,18 +12,13 @@ import { useAuth } from "./components/auth/authcontext";
 function AppRoutes() {
   const [balance, setBalance] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const { user} = useAuth();
+  const { user } = useAuth();
 
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-  //     </div>
-  //   );
-  // }
 
-    useEffect(() => {
-    if (user) {
+  useEffect(() => {
+    if (!user) return;
+
+    const interval = setInterval(() => {
       axios
         .get("http://localhost:5000/balance", {
           withCredentials: true,
@@ -33,11 +28,10 @@ function AppRoutes() {
         })
         .catch((err) => {
           console.error("Error fetching balance:", err);
-        })
-        .finally(() => {
-          setLoading(false);
         });
-    }
+    }, 5000);
+
+    return () => clearInterval(interval); 
   }, [user]);
 
   return (
@@ -52,17 +46,26 @@ function AppRoutes() {
       />
       <Route
         path="/trade"
-        element={user ? <TradePage balance={balance??0} /> : <Navigate to="/" replace />}
+        element={
+          user ? (
+            <TradePage balance={balance ?? 0} />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        }
       />
       <Route
         path="/portfolio"
-        element={user ? <Portfolio balance={balance??0} /> : <Navigate to="/" replace />}
+        element={
+          user ? (
+            <Portfolio balance={balance ?? 0} />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        }
       />
 
-      <Route>
-        path="/logout"
-        element = {}
-      </Route>
+      <Route>path="/logout" element = {}</Route>
     </Routes>
   );
 }

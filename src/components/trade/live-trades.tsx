@@ -74,10 +74,10 @@ export default function RecentTrades({ selectedCrypto }: RecentTradesProps) {
 
   return (
     <>
-      <div className="rounded-3xl p-5 border border-primary/30">
+      <div className="bg-background text-foreground rounded-3xl p-5 border border-primary/30 ">
         {/* Header */}
-        <div className="flex justify-between items-center mb-5">
-          <h2 className="text-xl font-bold text-white">Live Trades</h2>
+        <div className="flex justify-between items-center mb-9 mt-2">
+          <h2 className="absolute left-1/2 -translate-x-1/2 text-xl font-bold">Live Trades</h2>
         </div>
 
         {/* Trades list */}
