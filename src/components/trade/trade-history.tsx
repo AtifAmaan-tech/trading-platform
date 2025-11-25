@@ -35,6 +35,8 @@ export default function TradeHistoryCard({ refresh }: Props) {
   const [recentTrades, setRecentTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth()
+  const BASEURL = import.meta.env.VITE_PUBLIC_BACKEND_URL;
+
 
 
   const fetchTrades = async () => {
@@ -42,7 +44,7 @@ export default function TradeHistoryCard({ refresh }: Props) {
     try {
       setLoading(true);
 
-      const res = await axios.get("http://localhost:5000/get_trades", {
+      const res = await axios.get(`${BASEURL}/get_trades`, {
         withCredentials: true,
       });
 

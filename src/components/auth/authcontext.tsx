@@ -15,6 +15,8 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+const BASEURL = import.meta.env.VITE_PUBLIC_BACKEND_URL;
+
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -23,19 +25,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Check session on mount
     axios
-      .get("http://localhost:5000/auth-status", { withCredentials: true })
+      .get(`${BASEURL}/auth-status`, { withCredentials: true })
       .then((res) => {
         if (res.data.logged_in) {
           setUser(res.data);
         }
       })
       .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+      .finally(() => {setLoading(false); console.log("In auth context")});
   }, []);
 
     const logout = async () => {
     try {
-      await axios.post("http://localhost:5000/logout", {}, { withCredentials: true });
+      await axios.post(`${BASEURL}/logout`, {}, { withCredentials: true });
     } catch (err) {
       console.error("Logout failed:", err);
     } finally {

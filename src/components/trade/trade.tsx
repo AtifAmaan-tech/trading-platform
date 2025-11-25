@@ -45,6 +45,8 @@ export default function TradePage({
   const [selectedCrypto, setSelectedCrypto] = useState("BTC");
   const [balError, setbalerror] = useState("");
   const [inputAmount, setInputAmount] = useState<string>("");
+  const BASEURL = import.meta.env.VITE_PUBLIC_BACKEND_URL;
+
 
 
   const amount = parseFloat(inputAmount) || 0;
@@ -126,7 +128,7 @@ export default function TradePage({
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/create-transaction",
+        `${BASEURL}/create-transaction`,
         {
           data: orderData,
         },

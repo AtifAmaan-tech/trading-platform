@@ -23,6 +23,7 @@ function AppRoutes() {
   const [assets, setAssets] = useState<TokenResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const { prices } = useCryptoPrice();
+  const BASEURL = import.meta.env.VITE_PUBLIC_BACKEND_URL;
 
   const triggerRefresh = () => {
     setRefreshTrigger((prev) => prev + 1);
@@ -32,7 +33,7 @@ function AppRoutes() {
     if (!user) return "user not logged in";
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/get_tokens_qty", {
+      const res = await axios.get(`${BASEURL}/get_tokens_qty`, {
         withCredentials: true,
       });
 
@@ -57,7 +58,7 @@ function AppRoutes() {
 
     const interval = setInterval(() => {
       axios
-        .get("http://localhost:5000/total-balance", {
+        .get(`${BASEURL}/total-balance`, {
           withCredentials: true,
         })
         .then((res) => {
@@ -92,7 +93,7 @@ function AppRoutes() {
 
     const interval = setInterval(() => {
       axios
-        .get("http://localhost:5000/balance", {
+        .get(`${BASEURL}/balance`, {
           withCredentials: true,
         })
         .then((res) => {

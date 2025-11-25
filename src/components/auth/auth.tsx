@@ -30,6 +30,8 @@ export default function AuthPage({ onLogin }: { onLogin?: () => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const BASEURL = import.meta.env.VITE_PUBLIC_BACKEND_URL;
+
 
   const [formData, setFormData] = useState({
     email: "",
@@ -108,7 +110,7 @@ export default function AuthPage({ onLogin }: { onLogin?: () => void }) {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/login",
+        `${BASEURL}/login`,
         {
           email: formData.email,
           password: formData.password,
@@ -120,9 +122,10 @@ export default function AuthPage({ onLogin }: { onLogin?: () => void }) {
 
       if (response.status === 200) {
         // Verify session was created
-        const authCheck = await axios.get("http://localhost:5000/auth-status", {
+        const authCheck = await axios.get(`${BASEURL}/auth-status`, {
           withCredentials: true,
         });
+        console.log("In auth.tsx");
         
         if (authCheck.data.logged_in) {
           setUser(authCheck.data);
@@ -152,7 +155,7 @@ export default function AuthPage({ onLogin }: { onLogin?: () => void }) {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:5000/register",
+        `${BASEURL}/register`,
         {
           username: formData.username,
           email: formData.email,
