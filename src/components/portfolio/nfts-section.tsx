@@ -22,19 +22,19 @@ const nfts = [
 
 export function NFTsSection() {
   return (
-    <Card className=" glass-effect border-primary/30 p-6 glow-purple-box">
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+    <Card className="glass-effect border-primary/30 p-6 glow-purple-box">
+      <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
         <ImageIcon size={20} className="text-crypto-purple" />
         My NFTs
       </h3>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 ">
         {nfts.map((nft, idx) => (
           <div
             key={idx}
-            className="rounded-lg overflow-hidden border border-primary/30 transition-all"
+            className="rounded-lg overflow-hidden border border-primary/30 transition-all "
           >
-            <img src={nft.image} alt={nft.name} className="w-full h-32 object-cover" />
+            <img src={nft.image} alt={nft.name} className="w-full h-70 object-cover" />
             <div className="p-3 bg-black/30">
               <p className="font-semibold text-sm">{nft.name}</p>
               <p className="text-xs text-muted-foreground mb-2">{nft.rarity}</p>

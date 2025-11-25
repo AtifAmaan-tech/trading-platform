@@ -33,7 +33,9 @@ const SYMBOL_MAP: Record<string, string> = {
   AVAX: "AVAXUSDT",
   LINK: "LINKUSDT",
   DOT: "DOTUSDT",
-  MATIC: "MATICUSDT",
+  MATIC: "POLUSDT",  
+  TRX: "TRXUSDT",
+  SUI: "SUIUSDT",
   UNI: "UNIUSDT",
 }
 
@@ -151,7 +153,7 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
   const sortedCoins = getSortedCoins()
 
   return (
-    <div className="w-full bg-card border border-border border-primary/30 rounded-lg">
+    <div className="w-full bg-card border border-primary/30 rounded-lg">
       <div className="flex items-center justify-between mb-4">
         <h3 className="bg-card text-lg font-semibold pl-3 pt-2">Watchlist</h3>
         {coins.length > 0 && (
@@ -168,11 +170,11 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
       </div>
 
       {coins.length === 0 ? (
-        <div className="bg-card border border-border rounded-lg p-8 text-center">
+        <div className="bg-card rounded-lg p-8 text-center">
           <p className="text-muted-foreground text-sm">No coins in watchlist yet.</p>
         </div>
       ) : isLoading && Object.keys(coinData).length === 0 ? (
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="bg-card rounded-lg overflow-hidden">
           <div className="space-y-2 p-4">
             {[...Array(coins.length)].map((_, i) => (
               <div key={i} className="h-12 bg-muted rounded animate-pulse"></div>
@@ -180,21 +182,19 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
           </div>
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="bg-card rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className=" w-full text-sm">
               <thead>
-                <tr className=" border-b border-border bg-muted/50">
-                  <th className="px-4 py-3">
-                    <button
-                      onClick={() => handleSort("name")}
-                      className="flex items-center gap-2 font-semibold text-xs hover:text-foreground transition-colors"
+                <tr className="">
+                  <th className="px-4 py-0">
+                    <span
+                      className="font-semibold text-xs hover:text-foreground transition-colors"
                     >
                       Coin
-                      <SortIcon column="name" />
-                    </button>
+                    </span>
                   </th>
-                  <th className="px-4 py-3 text-right">
+                  <th className="px-4">
                     <button
                       onClick={() => handleSort("price")}
                       className="flex items-center justify-end gap-2 font-semibold text-xs hover:text-foreground transition-colors ml-auto"
@@ -203,7 +203,7 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
                       <SortIcon column="price" />
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-right">
+                  <th className="px-4">
                     <button
                       onClick={() => handleSort("change")}
                       className="flex items-center justify-end gap-2 font-semibold text-xs hover:text-foreground transition-colors ml-auto"
@@ -237,7 +237,7 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
                   return (
                     <tr
                       key={symbol}
-                      className="border-b border-border hover:bg-muted/30 transition-colors last:border-b-0"
+                      className=""
                     >
                       <td className="px-4 py-3">
                         <div className="font-semibold">{symbol}</div>
@@ -250,13 +250,13 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
                           {priceIsUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="py-3 text-right pr-9">
                         <div className={`font-semibold ${changeIsPositive ? "text-green-500" : "text-red-500"}`}>
                           {changeIsPositive ? "+" : ""}
                           {data.change24h.toFixed(2)}%
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-right pr-8">
                         <div className="text-xs text-muted-foreground">${(data.volume / 1000000).toFixed(1)}M</div>
                       </td>
                       <td className="px-4 py-3 text-center">

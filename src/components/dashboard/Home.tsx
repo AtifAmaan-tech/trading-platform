@@ -1,24 +1,43 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Navbar from "@/components/dashboard/navbar"
-import SearchBar from "@/components/dashboard/search-bar"
-import LiveTicker from "@/components/dashboard/live-ticker"
-import Watchlist from "@/components/dashboard/watchlist"
-import MarketOverview from "@/components/dashboard/market-overview"
+import { useState, useEffect,useRef } from "react";
+import Navbar from "@/components/dashboard/navbar";
+import SearchBar from "@/components/dashboard/search-bar";
+import LiveTicker from "@/components/dashboard/live-ticker";
+import Watchlist from "@/components/dashboard/watchlist";
+import MarketOverview from "@/components/dashboard/market-overview";
 
 export default function Dashboard() {
-  const [watchlist, setWatchlist] = useState<string[]>(["BTC", "ETH", "SOL"])
-  const [selectedCoin, setSelectedCoin] = useState<string | null>(null)
+  const [watchlist, setWatchlist] = useState<string[]>([]);
+  const [selectedCoin, setSelectedCoin] = useState<string | null>(null);
+
+const isInitialLoad = useRef(true);
+
+  // Load on mount, then save on every change after that
+  useEffect(() => {
+    if (isInitialLoad.current) {
+      // First render: load from localStorage
+      const stored = localStorage.getItem("watchlist");
+      if (stored) {
+        try {
+          setWatchlist(JSON.parse(stored));
+        } catch (e) {
+          console.error("Failed to parse watchlist:", e);
+        }
+      }
+      isInitialLoad.current = false;
+    } else {
+      // Subsequent renders: save to localStorage
+      localStorage.setItem("watchlist", JSON.stringify(watchlist));
+    }
+  }, [watchlist]);
 
   const addToWatchlist = (symbol: string) => {
-    if (!watchlist.includes(symbol)) {
-      setWatchlist([...watchlist, symbol])
-    }
+    setWatchlist(prev => prev.includes(symbol) ? prev : [...prev, symbol])
   }
 
   const removeFromWatchlist = (symbol: string) => {
-    setWatchlist(watchlist.filter((s) => s !== symbol))
+    setWatchlist(prev => prev.filter(s => s !== symbol))
   }
 
   return (
@@ -38,15 +57,18 @@ export default function Dashboard() {
             className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-8 animate-slideUp"
             style={{ animationDelay: "0.2s" }}
           >
-                      <div className="lg:col-span-4">
-              <Watchlist coins={watchlist} onRemove={removeFromWatchlist} onAdd={addToWatchlist} />
-            <div className="pt-5 lg:col-span-4">
-              <MarketOverview onAddToWatchlist={addToWatchlist} />
-            </div>
+            <div className="lg:col-span-4">
+              <Watchlist
+                coins={watchlist}
+                onRemove={removeFromWatchlist}
+              />
+              <div className="pt-5 lg:col-span-4">
+                <MarketOverview onAddToWatchlist={addToWatchlist} />
+              </div>
             </div>
           </div>
         </div>
       </main>
     </div>
-  )
+  );
 }

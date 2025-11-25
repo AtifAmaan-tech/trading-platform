@@ -14,57 +14,40 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert } from "../ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
-import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Clock, Wallet2, Star } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { Clock, Wallet2 } from "lucide-react";
 import BinanceCandlestick from "./candle-stick-graph";
 import RecentTrades from "./live-trades";
 import axios from "axios";
-
-interface TradeStats {
-  price: number;
-  change24h: number;
-  high24h: number;
-  low24h: number;
-  volume: number;
-  liquidity: number;
-}
-
-interface RecentTrade {
-  id: string;
-  type: "buy" | "sell";
-  price: number;
-  amount: number;
-  timestamp: string;
-  trader: string;
-}
+import { toast } from "sonner";
+import TradeHistoryCard from "./trade-history";
+import AssetsTab from "./my-assets";
 
 interface PortfolioProps {
   balance: number;
+  refresh: number;
+  onTradeComplete: () => void;
+  assets: any;
 }
 
-export default function TradePage({ balance }: PortfolioProps) {
+export default function TradePage({
+  balance,
+  refresh,
+  onTradeComplete,
+  assets,
+}: PortfolioProps) {
   const { prices } = useCryptoPrice();
   const [orderType, setOrderType] = useState<"market" | "limit">("market");
   const [tradeType, setTradeType] = useState<"buy" | "sell">("buy");
-  // const [amount, setAmount] = useState<number>(0);
   const [price, setPrice] = useState<number>(0);
   const [sliderValue, setSliderValue] = useState([0]);
   const [selectedCrypto, setSelectedCrypto] = useState("BTC");
   const [balError, setbalerror] = useState("");
   const [inputAmount, setInputAmount] = useState<string>("");
 
+
   const amount = parseFloat(inputAmount) || 0;
-  const stats: TradeStats = {
-    price: prices.BTC,
-    change24h: 2.45,
-    high24h: 46800,
-    low24h: 43200,
-    volume: 28500000000,
-    liquidity: 2100000000,
-  };
 
   const cryptos = [
     { symbol: "BTC", name: "Bitcoin", icon: "" },
@@ -79,49 +62,6 @@ export default function TradePage({ balance }: PortfolioProps) {
     { symbol: "ADA", name: "Cardano", icon: "" },
   ];
 
-  const recentTrades: RecentTrade[] = [
-    {
-      id: "1",
-      type: "buy",
-      price: 45230,
-      amount: 0.5,
-      timestamp: "2 min ago",
-      trader: "user_alpha",
-    },
-    {
-      id: "2",
-      type: "sell",
-      price: 45180,
-      amount: 1.2,
-      timestamp: "5 min ago",
-      trader: "trader_beta",
-    },
-    {
-      id: "3",
-      type: "buy",
-      price: 45150,
-      amount: 2.1,
-      timestamp: "8 min ago",
-      trader: "crypto_dev",
-    },
-    {
-      id: "4",
-      type: "sell",
-      price: 45220,
-      amount: 0.8,
-      timestamp: "12 min ago",
-      trader: "user_gamma",
-    },
-    {
-      id: "5",
-      type: "buy",
-      price: 45100,
-      amount: 3.5,
-      timestamp: "15 min ago",
-      trader: "trader_delta",
-    },
-  ];
-
   const percentageButtons = [25, 50, 75, 100];
 
   interface OrderData {
@@ -133,25 +73,48 @@ export default function TradePage({ balance }: PortfolioProps) {
     total: number;
   }
 
+
+  const getTokenBalance = (tokenSymbol: string): number => {
+    const token = assets.find((asset: any) => asset.token_symbol === tokenSymbol);
+    return parseFloat(token?.quantity || "0");
+  };
+
   const handleSubmit = async (e: {
     preventDefault: () => void;
   }): Promise<void> => {
+
     e.preventDefault();
 
     const total = (parseFloat(inputAmount) || 0) * prices[selectedCrypto];
-    console.log(total);
+    
 
-    if (total > balance) {
-      setbalerror("Not enough funds!");
-      setTimeout(() => setbalerror(""), 2000);
-      return; // stop execution
-    }
-
-    if (tradeType === "sell" && amount > 100) {
-      setbalerror(`Not enough ${selectedCrypto}!`);
+    // Validation for amount input
+    if (total === 0) {
+      setbalerror("Please enter amount!");
       setTimeout(() => setbalerror(""), 2000);
       return;
     }
+
+    // Validation for buy orders
+    if (tradeType === "buy" && total > balance) {
+      setbalerror("Not enough funds!");
+      setTimeout(() => setbalerror(""), 2000);
+      return;
+    }
+
+    // Validation for sell orders - check if user has enough tokens
+    if (tradeType === "sell") {
+      const availableBalance = getTokenBalance(selectedCrypto);
+
+      if (amount > availableBalance) {
+        setbalerror(
+          `Not enough ${selectedCrypto}! Available: ${availableBalance}`
+        );
+        setTimeout(() => setbalerror(""), 2000);
+        return;
+      }
+    }
+
     const orderData: OrderData = {
       crypto: selectedCrypto,
       orderType: orderType,
@@ -160,6 +123,7 @@ export default function TradePage({ balance }: PortfolioProps) {
       amount: amount,
       total: total,
     };
+
     try {
       const response = await axios.post(
         "http://localhost:5000/create-transaction",
@@ -170,7 +134,22 @@ export default function TradePage({ balance }: PortfolioProps) {
           withCredentials: true,
         }
       );
-    } catch (error: any) {}
+      if (tradeType === "buy") {
+        toast.success("Purchase Successful");
+        setInputAmount('')
+      } else {
+        toast.success("Sell Successful");
+        setInputAmount('')
+      }
+      onTradeComplete();
+    } catch (error: any) {
+      if (tradeType === "buy") {
+
+        toast.error("Purchase Failed");
+      } else {
+        toast.error("Sell Failed");
+      }
+    }
 
     setbalerror("");
   };
@@ -186,9 +165,9 @@ export default function TradePage({ balance }: PortfolioProps) {
       const cryptoAmount = usdToSpend / prices[selectedCrypto];
       setInputAmount(String(cryptoAmount));
     } else {
-      // For selling, use a fixed available balance (placeholder)
-      const fixedCryptoBalance = 1.0; // Replace with actual balance when API is available
-      const cryptoAmount = fixedCryptoBalance * percentage;
+      // For selling, use actual token balance from assets
+      const availableCryptoBalance = getTokenBalance(selectedCrypto);
+      const cryptoAmount = availableCryptoBalance * percentage;
       setInputAmount(String(cryptoAmount));
     }
   };
@@ -328,6 +307,7 @@ export default function TradePage({ balance }: PortfolioProps) {
                               setPrice(0);
                             }
                           }}
+                          
                           className="bg-input border-border/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
                       </div>
@@ -343,10 +323,20 @@ export default function TradePage({ balance }: PortfolioProps) {
                         placeholder="0.00"
                         value={inputAmount}
                         onChange={(e) => {
-                          // Only convert if not empty
+                          const value = e.target.value;
 
-                          setInputAmount(e.target.value);
+                          // Allow only digits and one decimal point
+                          if (/^[0-9]*\.?[0-9]*$/.test(value) || value === "") {
+                            setInputAmount(value);
+                          }
                         }}
+                        onKeyDown={(e) => {
+                          if (["-", "+", "e", "E"].includes(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onWheel={(e) => e.currentTarget.blur()}
+
                         className="bg-input border-border/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
                     </div>
@@ -396,10 +386,11 @@ export default function TradePage({ balance }: PortfolioProps) {
                                 usdToSpend / prices[selectedCrypto];
                               setInputAmount(String(cryptoAmount));
                             } else {
-                              // For selling, use a fixed available balance (placeholder)
-                              const fixedCryptoBalance = 1.0; // Replace with actual balance when API is available
+                              // For selling, use actual token balance from assets
+                              const availableCryptoBalance =
+                                getTokenBalance(selectedCrypto);
                               const cryptoAmount =
-                                fixedCryptoBalance * percentage;
+                                availableCryptoBalance * percentage;
                               setInputAmount(String(cryptoAmount));
                             }
                           }}
@@ -471,131 +462,44 @@ export default function TradePage({ balance }: PortfolioProps) {
           </div>
 
           {/* Bottom Tabs */}
-    <div
-      className="rounded-lg border border-primary/30 animate-slideUp"
-      style={{ animationDelay: "0.2s" }}
-    >
-      <Card className="border-border/50 backdrop-blur-sm">
-        <Tabs defaultValue="history" className="w-full">
-          <TabsList className="w-full justify-start rounded-none border-b border-border/30 px-6 py-0 h-auto bg-transparent">
-            <TabsTrigger
-              value="history"
-              className="rounded-sm border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-gradient-to-r 
+          <div
+            className="rounded-lg border border-primary/30 animate-slideUp"
+            style={{ animationDelay: "0.2s" }}
+          >
+            <Card className="border-border/50 backdrop-blur-sm">
+              <Tabs defaultValue="history" className="w-full">
+                <TabsList className="w-full justify-start rounded-none border-b border-border/30 px-6 py-0 h-auto bg-transparent">
+                  <TabsTrigger
+                    value="history"
+                    className="rounded-sm border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-gradient-to-r 
    data-[state=active]:from-purple-800 
    data-[state=active]:to-purple-700 
    data-[state=active]:text-white"
-            >
-              <Clock className="w-4 h-4 mr-2" />
-              Trade History
-            </TabsTrigger>
+                  >
+                    <Clock className="w-4 h-4 mr-2" />
+                    Trade History
+                  </TabsTrigger>
 
-            <TabsTrigger
-              value="assets"
-              className="rounded-sm border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-gradient-to-r 
+                  <TabsTrigger
+                    value="assets"
+                    className="rounded-sm border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-gradient-to-r 
    data-[state=active]:from-purple-800 
    data-[state=active]:to-purple-700 
    data-[state=active]:text-white"
-            >
-              <Wallet2 className="w-4 h-4 mr-2" />
-              My Assets
-            </TabsTrigger>
+                  >
+                    <Wallet2 className="w-4 h-4 mr-2" />
+                    My Assets
+                  </TabsTrigger>
+                </TabsList>
 
+                {/* Trade History */}
+                <TradeHistoryCard refresh={refresh} />
 
-          </TabsList>
-
-          {/* Trade History */}
-          <TabsContent value="history" className="p-6">
-            <div className="space-y-4">
-              {recentTrades.map((trade, index) => (
-                <div key={trade.id}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        {trade.type === 'buy' ? (
-                          <Badge className="bg-green-500/10 text-green-500 hover:bg-green-500/20 border-green-500/20">
-                            BUY
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20">
-                            SELL
-                          </Badge>
-                        )}
-                        <span className="text-sm font-medium">{trade.amount} BTC</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {trade.timestamp}
-                      </p>
-                    </div>
-                    
-                    <div className="text-right">
-                      <p className="text-lg font-bold mb-1">
-                        ${trade.price.toLocaleString()}
-                      </p>
-                      <p className={`text-sm ${trade.type === 'buy' ? 'text-green-500' : 'text-red-500'}`}>
-                        {trade.type === 'buy' ? '+' : '-'}{trade.amount} BTC
-                      </p>
-                    </div>
-                  </div>
-                  {index < recentTrades.length - 1 && <Separator className="mt-4" />}
-                </div>
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* My Assets */}
-          <TabsContent value="assets" className="p-6">
-            <div className="space-y-4">
-              {/* Bitcoin */}
-              <Card className="p-4 bg-card/50 border-border/50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-yellow-600 flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">₿</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">Bitcoin</h3>
-                      <p className="text-sm text-muted-foreground">2.5 BTC</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xl font-bold">$113,075.00</p>
-                    <div className="flex items-center justify-end gap-1 text-green-500">
-                      <TrendingUp className="w-4 h-4" />
-                      <span className="text-sm font-medium">+2.45%</span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Ethereum */}
-              <Card className="p-4 bg-card/50 border-border/50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-blue-600 flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">Ξ</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">Ethereum</h3>
-                      <p className="text-sm text-muted-foreground">10.2 ETH</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xl font-bold">$32,640.00</p>
-                    <div className="flex items-center justify-end gap-1 text-green-500">
-                      <TrendingUp className="w-4 h-4" />
-                      <span className="text-sm font-medium">+1.23%</span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </TabsContent>
-
-
-        </Tabs>
-      </Card>
-    </div>
+                {/* My Assets */}
+                <AssetsTab assets={assets} />
+              </Tabs>
+            </Card>
+          </div>
         </div>
       </main>
     </div>

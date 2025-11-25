@@ -1,25 +1,31 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { TrendingUp, TrendingDown, Volume2, Star, RefreshCw } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import useCryptoPrice from "../hooks/useCryptoPrice"
+import { useState, useEffect } from "react";
+import {
+  TrendingUp,
+  TrendingDown,
+  Volume2,
+  Star,
+  RefreshCw,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import useCryptoPrice from "../hooks/useCryptoPrice";
 
 interface Coin {
-  symbol: string
-  name: string
-  price: number
-  change24h: number
-  volume: number
-  marketCap: number
-  high24h: number
-  low24h: number
+  symbol: string;
+  name: string;
+  price: number;
+  change24h: number;
+  volume: number;
+  marketCap: number;
+  high24h: number;
+  low24h: number;
 }
 
 interface CoinConfig {
-  symbol: string
-  name: string
-  apiSymbol: string
+  symbol: string;
+  name: string;
+  apiSymbol: string;
 }
 
 const COIN_CONFIGS: CoinConfig[] = [
@@ -33,54 +39,59 @@ const COIN_CONFIGS: CoinConfig[] = [
   { symbol: "TRX", name: "TRX", apiSymbol: "TRXUSDT" },
   { symbol: "SUI", name: "SUI", apiSymbol: "SUIUSDT" },
   { symbol: "MATIC", name: "MATIC", apiSymbol: "POLUSDT" },
-]
+];
 
 interface MarketOverviewProps {
-  onAddToWatchlist?: (symbol: string) => void
+  onAddToWatchlist?: (symbol: string) => void;
 }
 
-type FilterType = "gainers" | "losers" | "volume" | "all"
+type FilterType = "gainers" | "losers" | "volume" | "all";
 
-export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps) {
-  const [filter, setFilter] = useState<FilterType>("gainers")
-  const [coins, setCoins] = useState<Coin[]>([])
-  const [displayData, setDisplayData] = useState<Coin[]>([])
-  const [favorites, setFavorites] = useState<string[]>([])
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
+export default function MarketOverview({
+  onAddToWatchlist,
+}: MarketOverviewProps) {
+  const [filter, setFilter] = useState<FilterType>("gainers");
+  const [coins, setCoins] = useState<Coin[]>([]);
+  const [displayData, setDisplayData] = useState<Coin[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   // Use the custom hook for live prices
-  const { prices, loading, error } = useCryptoPrice()
+  const { prices, loading, error } = useCryptoPrice();
 
   useEffect(() => {
-    const stored = localStorage.getItem("favorites")
+    const stored = localStorage.getItem("favorites");
     if (stored) {
       try {
-        setFavorites(JSON.parse(stored))
+        setFavorites(JSON.parse(stored));
       } catch (e) {
-        console.error("Error loading favorites:", e)
+        console.error("Error loading favorites:", e);
       }
     }
-  }, [])
+  }, []);
 
   // Fetch 24h data (volume, change, high, low) from Binance
   const fetch24hData = async () => {
     try {
       const responses = await Promise.all(
-        COIN_CONFIGS.map(config =>
-          fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${config.apiSymbol}`)
-            .then(res => res.json())
+        COIN_CONFIGS.map((config) =>
+          fetch(
+            `https://api.binance.com/api/v3/ticker/24hr?symbol=${config.apiSymbol}`
+          )
+            .then((res) => res.json())
             .catch(() => null)
         )
-      )
+      );
 
       const newCoins: Coin[] = responses
         .map((data, index) => {
-          if (!data || !data.lastPrice) return null
+          if (!data || !data.lastPrice) return null;
 
-          const config = COIN_CONFIGS[index]
+          const config = COIN_CONFIGS[index];
           // Use price from the hook if available, otherwise use API price
-          const currentPrice = prices[config.symbol] || parseFloat(data.lastPrice)
-          
+          const currentPrice =
+            prices[config.symbol] || parseFloat(data.lastPrice);
+
           return {
             symbol: config.symbol,
             name: config.name,
@@ -90,65 +101,69 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
             marketCap: 0,
             high24h: parseFloat(data.highPrice),
             low24h: parseFloat(data.lowPrice),
-          }
+          };
         })
-        .filter((coin): coin is Coin => coin !== null)
+        .filter((coin): coin is Coin => coin !== null);
 
-      setCoins(newCoins)
-      setLastUpdate(new Date())
+      setCoins(newCoins);
+      setLastUpdate(new Date());
     } catch (err) {
-      console.error("Error fetching market data:", err)
+      console.error("Error fetching market data:", err);
     }
-  }
+  };
 
   // Fetch 24h data on mount and every 30 seconds (since prices update every 10s via hook)
   useEffect(() => {
-    fetch24hData()
-    const interval = setInterval(fetch24hData, 30000)
-    return () => clearInterval(interval)
-  }, [])
+    fetch24hData();
+    const interval = setInterval(fetch24hData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Update coin prices when the hook updates prices
   useEffect(() => {
     if (Object.keys(prices).length > 0 && coins.length > 0) {
-      setCoins(prevCoins => 
-        prevCoins.map(coin => ({
+      setCoins((prevCoins) =>
+        prevCoins.map((coin) => ({
           ...coin,
-          price: prices[coin.symbol] || coin.price
+          price: prices[coin.symbol] || coin.price,
         }))
-      )
+      );
     }
-  }, [prices])
+  }, [prices]);
 
   useEffect(() => {
-    if (coins.length === 0) return
+    if (coins.length === 0) return;
 
-    let filtered: Coin[] = []
+    let filtered: Coin[] = [];
 
     switch (filter) {
       case "gainers":
-        filtered = [...coins].sort((a, b) => b.change24h - a.change24h).slice(0, 6)
-        break
+        filtered = [...coins]
+          .sort((a, b) => b.change24h - a.change24h)
+          .slice(0, 6);
+        break;
       case "losers":
-        filtered = [...coins].sort((a, b) => a.change24h - b.change24h).slice(0, 6)
-        break
+        filtered = [...coins]
+          .sort((a, b) => a.change24h - b.change24h)
+          .slice(0, 6);
+        break;
       case "volume":
-        filtered = [...coins].sort((a, b) => b.volume - a.volume).slice(0, 6)
-        break
+        filtered = [...coins].sort((a, b) => b.volume - a.volume).slice(0, 6);
+        break;
       default:
-        filtered = coins
+        filtered = coins;
     }
 
-    setDisplayData(filtered)
-  }, [filter, coins])
+    setDisplayData(filtered);
+  }, [filter, coins]);
 
   const toggleFavorite = (symbol: string) => {
-    const updated = favorites.includes(symbol) 
-      ? favorites.filter((s) => s !== symbol) 
-      : [...favorites, symbol]
-    setFavorites(updated)
-    localStorage.setItem("favorites", JSON.stringify(updated))
-  }
+    const updated = favorites.includes(symbol)
+      ? favorites.filter((s) => s !== symbol)
+      : [...favorites, symbol];
+    setFavorites(updated);
+    localStorage.setItem("favorites", JSON.stringify(updated));
+  };
 
   const CoinCard = ({ coin }: { coin: Coin }) => (
     <div className="bg-card border border-border rounded-lg p-4 border-primary/25 transition-all shadow-md hover:shadow-lg group">
@@ -159,12 +174,15 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
             <button
               onClick={() => toggleFavorite(coin.symbol)}
               className={`transition-colors ${
-                favorites.includes(coin.symbol) 
-                  ? "text-yellow-500" 
+                favorites.includes(coin.symbol)
+                  ? "text-yellow-500"
                   : "text-muted-foreground hover:text-yellow-500"
               }`}
             >
-              <Star className="w-4 h-4" fill={favorites.includes(coin.symbol) ? "currentColor" : "none"} />
+              <Star
+                className="w-4 h-4"
+                fill={favorites.includes(coin.symbol) ? "currentColor" : "none"}
+              />
             </button>
           </div>
           <div className="text-sm text-muted-foreground">{coin.name}</div>
@@ -196,7 +214,11 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
               coin.change24h >= 0 ? "text-green-500" : "text-red-500"
             }`}
           >
-            {coin.change24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+            {coin.change24h >= 0 ? (
+              <TrendingUp className="w-4 h-4" />
+            ) : (
+              <TrendingDown className="w-4 h-4" />
+            )}
             {coin.change24h >= 0 ? "+" : ""}
             {coin.change24h.toFixed(2)}%
           </span>
@@ -205,8 +227,9 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground text-sm">24h Volume</span>
           <span className="font-semibold text-sm">
-            ${coin.volume >= 1000000000 
-              ? `${(coin.volume / 1000000000).toFixed(2)}B` 
+            $
+            {coin.volume >= 1000000000
+              ? `${(coin.volume / 1000000000).toFixed(2)}B`
               : `${(coin.volume / 1000000).toFixed(2)}M`}
           </span>
         </div>
@@ -219,7 +242,7 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
         </div>
       </div>
     </div>
-  )
+  );
 
   return (
     <div className="space-y-6">
@@ -252,43 +275,39 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
 
       {/* Filter Controls */}
       <div className="flex gap-2 flex-wrap">
-        <Button
-          size="sm"
-          variant={filter === "gainers" ? "default" : "outline"}
-          onClick={() => setFilter("gainers")}
-          className="flex items-center gap-2"
-        >
-          <TrendingUp className="w-4 h-4" />
-          Top Gainers
-        </Button>
-        <Button
-          size="sm"
-          variant={filter === "losers" ? "default" : "outline"}
-          onClick={() => setFilter("losers")}
-          className="flex items-center gap-2"
-        >
-          <TrendingDown className="w-4 h-4" />
-          Top Losers
-        </Button>
-        <Button
-          size="sm"
-          variant={filter === "volume" ? "default" : "outline"}
-          onClick={() => setFilter("volume")}
-          className="flex items-center gap-2"
-        >
-          <Volume2 className="w-4 h-4" />
-          High Volume
-        </Button>
-        <Button size="sm" variant={filter === "all" ? "default" : "outline"} onClick={() => setFilter("all")}>
-          All Coins
-        </Button>
+        {[
+          { key: "gainers", label: "Top Gainers", icon: TrendingUp },
+          { key: "losers", label: "Top Losers", icon: TrendingDown },
+          { key: "volume", label: "High Volume", icon: Volume2 },
+          { key: "all", label: "All Coins" },
+        ].map(({ key, label, icon: Icon }) => (
+          <Button
+            key={key}
+            size="sm"
+            onClick={() => setFilter(key as any)}
+            variant={filter === key ? "default" : "outline"}
+            className={
+              filter === key
+                ? "bg-gradient-to-r from-purple-800 to-purple-700 text-white border-purple-700 hover:from-purple-800 hover:to-purple-700 hover:text-white"
+                : "border-border"
+            }
+          >
+            <div className="flex items-center gap-2">
+              {Icon && <Icon className="w-4 h-4" />}
+              {label}
+            </div>
+          </Button>
+        ))}
       </div>
 
       {/* Loading State */}
       {loading && coins.length === 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(10)].map((_, i) => (
-            <div key={i} className="bg-card border border-border rounded-lg p-4 animate-pulse">
+            <div
+              key={i}
+              className="bg-card border border-border rounded-lg p-4 animate-pulse"
+            >
               <div className="h-6 bg-muted rounded w-20 mb-2"></div>
               <div className="h-4 bg-muted rounded w-32 mb-4"></div>
               <div className="space-y-3">
@@ -308,5 +327,5 @@ export default function MarketOverview({ onAddToWatchlist }: MarketOverviewProps
         </div>
       )}
     </div>
-  )
+  );
 }
