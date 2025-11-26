@@ -122,9 +122,6 @@ export default function AuthPage({ onLogin }: { onLogin?: () => void }) {
         // Verify session was created
         const authCheck = await axios.get(`${BASEURL}/auth-status`, {
           withCredentials: true,
-          headers: {
-            "ngrok-skip-browser-warning": "true",
-          },
         });
         console.log("In auth.tsx");
 
