@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -31,7 +30,6 @@ export default function AuthPage({ onLogin }: { onLogin?: () => void }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const BASEURL = import.meta.env.VITE_PUBLIC_BACKEND_URL;
-
 
   const [formData, setFormData] = useState({
     email: "",
@@ -124,9 +122,12 @@ export default function AuthPage({ onLogin }: { onLogin?: () => void }) {
         // Verify session was created
         const authCheck = await axios.get(`${BASEURL}/auth-status`, {
           withCredentials: true,
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          },
         });
         console.log("In auth.tsx");
-        
+
         if (authCheck.data.logged_in) {
           setUser(authCheck.data);
           toast.success("Login successful");
@@ -166,7 +167,7 @@ export default function AuthPage({ onLogin }: { onLogin?: () => void }) {
           headers: { "Content-Type": "application/json" },
         }
       );
-      
+
       toast.success("Account created successfully! Please log in.");
       setIsLogin(true);
       setFormData({

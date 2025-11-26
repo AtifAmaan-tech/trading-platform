@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from "../auth/authcontext";
 
 interface PriceData {
   symbol: string;
@@ -25,8 +26,10 @@ const useCryptoPrice = () => {
     'SOLUSDT', 'XRPUSDT', 'TRXUSDT', 'ADAUSDT',
     'POLUSDT', 'SUIUSDT'
   ];
+  const user = useAuth();
 
   const fetchPrices = async () => {
+    if (!user) return;
     try {
       const symbolsParam = symbols.map(s => `"${s}"`).join(',');
       const response = await fetch(
