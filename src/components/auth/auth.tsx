@@ -115,6 +115,7 @@ export default function AuthPage({ onLogin }: { onLogin?: () => void }) {
         },
         {
           withCredentials: true,
+          headers: { "Content-Type": "application/json" },
         }
       );
 
