@@ -91,8 +91,7 @@ A Flask-based REST API providing authentication, trading operations, and portfol
 
 - **Framework**: [Flask](https://flask.palletsprojects.com/)
 - **Language**: Python
-- **Database**: PostgreSQL
-- **ORM**: SQLAlchemy
+- **Database**: PostgreSQL 
 - **Authentication**: Flask-Session with cookie-based sessions
 
 ### API Endpoints
