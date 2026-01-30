@@ -166,11 +166,11 @@ export default function MarketOverview({
   };
 
   const CoinCard = ({ coin }: { coin: Coin }) => (
-    <div className="bg-card border border-border rounded-lg p-4 border-primary/25 transition-all shadow-md hover:shadow-lg group">
-      <div className="flex items-start justify-between mb-4">
+    <div className="bg-card border border-border rounded-lg p-2 sm:p-4 border-primary/25 transition-all shadow-md hover:shadow-lg group">
+      <div className="flex items-start justify-between mb-2 sm:mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <div className="font-bold text-lg">{coin.symbol}</div>
+            <div className="font-bold text-base sm:text-lg">{coin.symbol}</div>
             <button
               onClick={() => toggleFavorite(coin.symbol)}
               className={`transition-colors ${
@@ -185,16 +185,17 @@ export default function MarketOverview({
               />
             </button>
           </div>
-          <div className="text-sm text-muted-foreground">{coin.name}</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">{coin.name}</div>
         </div>
         {onAddToWatchlist && (
           <Button
             size="sm"
             variant="outline"
             onClick={() => onAddToWatchlist(coin.symbol)}
-            className="text-xs bg-zinc-800"
+            className="text-xs bg-zinc-800 px-2 sm:px-3"
           >
-            Add to watchlist
+            <span className="hidden sm:inline">Add to watchlist</span>
+            <span className="sm:hidden">+ Watch</span>
           </Button>
         )}
       </div>
@@ -245,11 +246,11 @@ export default function MarketOverview({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-6">
       {/* Header with Last Update */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Market Overview</h2>
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+        <h2 className="text-xl sm:text-2xl font-bold">Market Overview</h2>
+        <div className="flex items-center gap-2 sm:gap-3">
           <span className="text-xs text-muted-foreground">
             Updated: {lastUpdate.toLocaleTimeString()}
           </span>
@@ -258,10 +259,10 @@ export default function MarketOverview({
             variant="outline"
             onClick={fetch24hData}
             disabled={loading}
-            className="gap-2"
+            className="gap-1 sm:gap-2 px-2 sm:px-3"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>
       </div>
@@ -274,27 +275,30 @@ export default function MarketOverview({
       )}
 
       {/* Filter Controls */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-1.5 sm:gap-2 flex-wrap">
         {[
-          { key: "gainers", label: "Top Gainers", icon: TrendingUp },
-          { key: "losers", label: "Top Losers", icon: TrendingDown },
-          { key: "volume", label: "High Volume", icon: Volume2 },
-          { key: "all", label: "All Coins" },
-        ].map(({ key, label, icon: Icon }) => (
+          { key: "gainers", label: "Top Gainers", mobileLabel: "Gainers", icon: TrendingUp },
+          { key: "losers", label: "Top Losers", mobileLabel: "Losers", icon: TrendingDown },
+          { key: "volume", label: "High Volume", mobileLabel: "Volume", icon: Volume2 },
+          { key: "all", label: "All Coins", mobileLabel: "All" },
+        ].map(({ key, label, mobileLabel, icon: Icon }) => (
           <Button
             key={key}
             size="sm"
             onClick={() => setFilter(key as any)}
             variant={filter === key ? "default" : "outline"}
             className={
+              `text-xs sm:text-sm px-2 sm:px-3 ${
               filter === key
                 ? "bg-gradient-to-r from-purple-800 to-purple-700 text-white border-purple-700 hover:from-purple-800 hover:to-purple-700 hover:text-white"
                 : "border-border"
+              }`
             }
           >
-            <div className="flex items-center gap-2">
-              {Icon && <Icon className="w-4 h-4" />}
-              {label}
+            <div className="flex items-center gap-1 sm:gap-2">
+              {Icon && <Icon className="w-3 h-3 sm:w-4 sm:h-4" />}
+              <span className="hidden sm:inline">{label}</span>
+              <span className="sm:hidden">{mobileLabel}</span>
             </div>
           </Button>
         ))}
@@ -320,7 +324,7 @@ export default function MarketOverview({
         </div>
       ) : (
         /* Coins Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {displayData.map((coin) => (
             <CoinCard key={coin.symbol} coin={coin} />
           ))}

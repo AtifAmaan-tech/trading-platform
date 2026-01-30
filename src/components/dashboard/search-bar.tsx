@@ -67,7 +67,7 @@ export default function SearchBar({ onSelectCoin }: SearchBarProps) {
   }
 
   return (
-    <div className="relative max-w-md border border-primary/30 rounded-lg">
+    <div className="relative w-full sm:max-w-md border border-primary/30 rounded-none sm:rounded-lg">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
         <Input

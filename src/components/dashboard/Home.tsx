@@ -43,18 +43,18 @@ const isInitialLoad = useRef(true);
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
-      <main className="pt-12">
-        <div className="w-full mx-auto px-6 py-8 animate-fadeIn">
+      <main className="pt-14 sm:pt-12">
+        <div className="w-full px-1 sm:px-6 py-2 sm:py-8 animate-fadeIn">
           <div className="animate-slideDown">
             <SearchBar onSelectCoin={setSelectedCoin} />
           </div>
           <div className="animate-slideDown" style={{ animationDelay: "0.1s" }}>
-            <div className="mt-6">
+            <div className="mt-3 sm:mt-6">
               <LiveTicker />
             </div>
           </div>
           <div
-            className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-8 animate-slideUp"
+            className="grid grid-cols-1 lg:grid-cols-4 gap-2 sm:gap-6 mt-4 sm:mt-8 animate-slideUp"
             style={{ animationDelay: "0.2s" }}
           >
             <div className="lg:col-span-4">
@@ -62,7 +62,7 @@ const isInitialLoad = useRef(true);
                 coins={watchlist}
                 onRemove={removeFromWatchlist}
               />
-              <div className="pt-5 lg:col-span-4">
+              <div className="pt-3 sm:pt-5 lg:col-span-4">
                 <MarketOverview onAddToWatchlist={addToWatchlist} />
               </div>
             </div>

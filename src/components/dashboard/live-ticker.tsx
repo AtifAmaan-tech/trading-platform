@@ -135,10 +135,10 @@ export default function LiveTicker() {
   }
 
 return (
-  <div className="bg-card border border-primary/25 rounded-lg p-4 shadow-sm">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="font-semibold text-lg">Live Market Ticker</h3>
-      <div className="flex items-center gap-2">
+  <div className="bg-card border border-primary/25 rounded-none sm:rounded-lg p-1.5 sm:p-4 shadow-sm">
+    <div className="flex items-center justify-between mb-3 sm:mb-4">
+      <h3 className="font-semibold text-base sm:text-lg">Live Market Ticker</h3>
+      <div className="flex items-center gap-1.5 sm:gap-2">
         <div className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500 animate-pulse" : "bg-red-500"}`} />
         <span className="text-xs text-zinc-400">{isConnected ? "Live" : "Disconnected"}</span>
       </div>
@@ -148,7 +148,7 @@ return (
       <div className="text-xs text-red-500 mb-2">{error}</div>
     )}
 
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
       {tickers.map((ticker) => {
         const priceColor = getPriceChangeColor(ticker.price, ticker.previousPrice)
         const priceIcon = getPriceChangeIcon(ticker.price, ticker.previousPrice)
@@ -156,19 +156,19 @@ return (
         return (
           <div
             key={ticker.symbol}
-            className="flex items-center gap-4 px-4 py-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
+            className="flex items-center gap-2 sm:gap-4 px-2 sm:px-4 py-2 sm:py-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
           >
-            <div className="flex flex-col gap-1">
-              <div className="font-semibold text-sm">{ticker.symbol}</div>
+            <div className="flex flex-col gap-0.5 sm:gap-1">
+              <div className="font-semibold text-xs sm:text-sm">{ticker.symbol}</div>
               <div className={`text-xs font-medium ${ticker.change24h >= 0 ? "text-green-500" : "text-red-500"}`}>
                 {ticker.change24h >= 0 ? "+" : ""}
                 {ticker.change24h.toFixed(2)}%
               </div>
             </div>
 
-            <div className="border-l border-border pl-4 flex flex-col gap-1">
-              <div className={`text-lg font-bold flex items-center gap-1 ${priceColor}`}>
-                ${ticker.price > 1000 ? ticker.price.toFixed(2) : ticker.price.toFixed(4)}
+            <div className="border-l border-border pl-2 sm:pl-4 flex flex-col gap-0.5 sm:gap-1">
+              <div className={`text-sm sm:text-lg font-bold flex items-center gap-1 ${priceColor}`}>
+                ${ticker.price > 1000 ? ticker.price.toFixed(0) : ticker.price.toFixed(4)}
                 {priceIcon && <span className={`${priceColor}`}>{priceIcon}</span>}
               </div>
               <div className="text-xs text-muted-foreground">

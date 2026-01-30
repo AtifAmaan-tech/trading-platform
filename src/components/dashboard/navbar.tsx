@@ -60,10 +60,10 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
-      <div className="mx-auto px-6 py-4 flex items-center">
+      <div className="mx-auto px-3 sm:px-6 py-3 sm:py-4 flex items-center">
         {/* LEFT GROUP: Logo + Desktop Nav */}
         <div className="flex items-center gap-8">
-          <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent">
+          <div className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent">
             TradeX
           </div>
 

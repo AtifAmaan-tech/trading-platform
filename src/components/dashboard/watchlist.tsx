@@ -153,9 +153,9 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
   const sortedCoins = getSortedCoins()
 
   return (
-    <div className="w-full bg-card border border-primary/30 rounded-lg">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="bg-card text-lg font-semibold pl-3 pt-2">Watchlist</h3>
+    <div className="w-full bg-card border border-primary/30 rounded-none sm:rounded-lg">
+      <div className="flex items-center justify-between mb-2 sm:mb-4 px-1.5 sm:px-4 pt-1.5 sm:pt-4">
+        <h3 className="bg-card text-base sm:text-lg font-semibold">Watchlist</h3>
         {coins.length > 0 && (
           <Button
             size="sm"
@@ -184,48 +184,49 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
       ) : (
         <div className="bg-card rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
-            <table className=" w-full text-sm">
+            <table className="w-full text-xs sm:text-sm">
               <thead>
                 <tr className="">
-                  <th className="px-4 py-0">
+                  <th className="px-2 sm:px-4 py-0">
                     <span
                       className="font-semibold text-xs hover:text-foreground transition-colors"
                     >
                       Coin
                     </span>
                   </th>
-                  <th className="px-4">
+                  <th className="px-2 sm:px-4">
                     <button
                       onClick={() => handleSort("price")}
-                      className="flex items-center justify-end gap-2 font-semibold text-xs hover:text-foreground transition-colors ml-auto"
+                      className="flex items-center justify-end gap-1 sm:gap-2 font-semibold text-xs hover:text-foreground transition-colors ml-auto"
                     >
                       Price
                       <SortIcon column="price" />
                     </button>
                   </th>
-                  <th className="px-4">
+                  <th className="px-2 sm:px-4">
                     <button
                       onClick={() => handleSort("change")}
-                      className="flex items-center justify-end gap-2 font-semibold text-xs hover:text-foreground transition-colors ml-auto"
+                      className="flex items-center justify-end gap-1 sm:gap-2 font-semibold text-xs hover:text-foreground transition-colors ml-auto"
                     >
                       24h %
                       <SortIcon column="change" />
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-right">
+                  <th className="hidden sm:table-cell px-2 sm:px-4 py-3 text-right">
                     <button
                       onClick={() => handleSort("volume")}
-                      className="flex items-center justify-end gap-2 font-semibold text-xs hover:text-foreground transition-colors ml-auto"
+                      className="flex items-center justify-end gap-1 sm:gap-2 font-semibold text-xs hover:text-foreground transition-colors ml-auto"
                     >
                       Volume
                       <SortIcon column="volume" />
                     </button>
                   </th>
-                  <th className="px-4 py-3 text-center">
+                  <th className="px-2 sm:px-4 py-3 text-center">
                     <span className="sr-only">Actions</span>
                   </th>
                 </tr>
               </thead>
+
               <tbody>
                 {sortedCoins.map((symbol) => {
                   const data = coinData[symbol]
@@ -239,10 +240,10 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
                       key={symbol}
                       className=""
                     >
-                      <td className="px-4 py-3">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3">
                         <div className="font-semibold">{symbol}</div>
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 text-right">
                         <div
                           className={`font-semibold flex items-center justify-end gap-1 ${priceIsUp ? "text-green-500" : "text-red-500"}`}
                         >
@@ -250,16 +251,16 @@ export default function Watchlist({ coins = [], onRemove }: WatchlistProps) {
                           {priceIsUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                         </div>
                       </td>
-                      <td className="py-3 text-right pr-9">
+                      <td className="py-2 sm:py-3 text-right pr-4 sm:pr-9">
                         <div className={`font-semibold ${changeIsPositive ? "text-green-500" : "text-red-500"}`}>
                           {changeIsPositive ? "+" : ""}
                           {data.change24h.toFixed(2)}%
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right pr-8">
+                      <td className="hidden sm:table-cell px-2 sm:px-4 py-2 sm:py-3 text-right pr-8">
                         <div className="text-xs text-muted-foreground">${(data.volume / 1000000).toFixed(1)}M</div>
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 text-center">
                         <button
                           onClick={() => onRemove(symbol)}
                           className="text-muted-foreground hover:text-destructive transition-colors"

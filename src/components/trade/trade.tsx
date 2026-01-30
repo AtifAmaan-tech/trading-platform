@@ -182,11 +182,11 @@ export default function TradePage({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
-      <main className="pt-5">
-        <div className="w-full mx-auto px-6 py-8">
+      <main className="pt-14 sm:pt-5">
+        <div className="w-full px-1 sm:px-6 py-2 sm:py-8">
           {/* Main Trading Area */}
           <div
-            className="rounded-lg grid grid-cols-1 lg:grid-cols-4 gap-6
+            className="rounded-lg grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-6
             animate-slideUp"
             style={{ animationDelay: "0.1s" }}
           >

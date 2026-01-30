@@ -20,16 +20,15 @@ const useCryptoPrice = () => {
   const [prices, setPrices] = useState<Prices>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const symbols = [
     'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'DOGEUSDT',
     'SOLUSDT', 'XRPUSDT', 'TRXUSDT', 'ADAUSDT',
     'POLUSDT', 'SUIUSDT'
   ];
-  const user = useAuth();
 
   const fetchPrices = async () => {
-    if (!user) return;
     try {
       const symbolsParam = symbols.map(s => `"${s}"`).join(',');
       const response = await fetch(
@@ -56,10 +55,16 @@ const useCryptoPrice = () => {
   };
 
   useEffect(() => {
+    // Only fetch prices when user is logged in
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     fetchPrices();
     const interval = setInterval(fetchPrices, 10_000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   return { prices, loading, error } satisfies UseCryptoPriceReturn;
 };

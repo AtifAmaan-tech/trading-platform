@@ -22,6 +22,7 @@ function AppRoutes() {
   const [totalBalance, setTotalBalance] = useState<number>();
   const [assets, setAssets] = useState<TokenResponse[]>([]);
   const [loading, setLoading] = useState(false);
+  // Crypto prices are only fetched when user is logged in (handled in hook)
   const { prices } = useCryptoPrice();
   const BASEURL = import.meta.env.VITE_PUBLIC_BACKEND_URL;
 
@@ -47,8 +48,10 @@ function AppRoutes() {
   };
 
   useEffect(() => {
-    fetchAssets();
-  }, [balance]);
+    if (user) {
+      fetchAssets();
+    }
+  }, [balance, user]);
 
   useEffect(() => {
     if (!user) {

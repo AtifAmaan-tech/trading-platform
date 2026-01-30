@@ -19,9 +19,9 @@ export default function Portfolio({totalBalance, assets}: props) {
     <div className="dark min-h-screen bg-background text-foreground">
       <Navbar />
 
-      <main className="mt-12 relative z-10 mx-auto px-4 py-8">
+      <main className="mt-14 sm:mt-12 relative z-10 px-1 sm:px-4 py-2 sm:py-8">
         {/* Top Section - Balance and Token Allocation */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 mb-3 sm:mb-6">
           <div className="lg:col-span-2">
             <BalanceCard totalBalance={totalBalance} />
           </div>
@@ -31,7 +31,7 @@ export default function Portfolio({totalBalance, assets}: props) {
         </div>
 
         {/* Lower Section - Wallets, NFTs, Transactions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-3 sm:mb-6">
           <ConnectedWalletsCard />
           <NFTsSection />
         </div>
